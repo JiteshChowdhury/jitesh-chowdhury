@@ -118,8 +118,9 @@
   .slide-counter { font-size:11px; color:var(--muted); min-width:36px; text-align:center; font-weight:600; letter-spacing:1px; }
 
   .lilly-logo {
-    position:fixed; top:12px; left:16px; z-index:9999;
-    height:50px; width:auto; pointer-events:none;
+    display:block; margin-bottom:12px;
+    max-width:6rem; height:auto; width:100%;
+    pointer-events:none;
     mix-blend-mode: multiply; /* removes black bg on light mode */
   }
   [data-theme="dark"] .lilly-logo {
@@ -221,7 +222,6 @@
 
   <!-- SINGLE PERSISTENT TOP BAR -->
   <div class="top-bar"></div>
-<img id="lillyLogo" class="lilly-logo" alt="Lilly" />
 
   <!-- THEME TOGGLE -->
   <div class="theme-toggle" id="themeToggle">
@@ -236,6 +236,7 @@
   <!-- SLIDE 1: HERO -->
   <div class="slide active" id="s1">
     <div class="slide-inner">
+      <img id="lillyLogo" class="lilly-logo" alt="Lilly" />
       <div class="s1-deco" id="s1deco"></div>
       <div class="eyebrow">Sr. Principal Visual Data Scientist · Eli Lilly</div>
       <div class="s1-name">Jitesh<br><span>Chowdhury</span></div>
