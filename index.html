@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jitesh Chowdhury</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Barlow:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
 
   :root {
@@ -22,9 +22,18 @@
     font-family:'Barlow',Arial,sans-serif;
     background:var(--bg); color:var(--text);
     overflow:hidden; height:100vh; width:100vw;
+    display:flex; justify-content:center;
   }
 
-  /* ── PERSISTENT TOP BAR (outside slides) ── */
+  /* outer shell — centres and caps content width */
+  .shell {
+    position:relative;
+    width:100%; max-width:1200px;
+    height:100vh;
+    overflow:hidden;
+  }
+
+  /* ── PERSISTENT TOP BAR ── */
   .top-bar {
     position:fixed; top:0; left:0; right:0;
     height:6px; background:var(--red); z-index:300;
@@ -60,7 +69,7 @@
 
   .slide-inner {
     flex:1; padding:52px 64px 72px;
-    display:flex; flex-direction:column; overflow:hidden;
+    display:flex; flex-direction:column; overflow-y:auto;
     background:var(--bg);
   }
 
@@ -95,10 +104,11 @@
   /* NAV */
   .nav {
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-    display:flex; align-items:center; gap:16px;
+    display:flex; align-items:center; gap:14px;
     background:var(--bg); border:1px solid var(--border);
-    border-radius:999px; padding:10px 22px;
+    border-radius:999px; padding:8px 18px;
     box-shadow:0 2px 16px rgba(0,0,0,0.1); z-index:100;
+    white-space:nowrap;
   }
   .nav button { background:none; border:none; color:var(--text); cursor:pointer; font-size:16px; padding:4px 8px; opacity:0.4; font-weight:700; }
   .nav button:hover { opacity:1; }
@@ -107,16 +117,22 @@
   .dot.active { background:var(--red); border-color:var(--red); transform:scale(1.3); }
   .slide-counter { font-size:11px; color:var(--muted); min-width:36px; text-align:center; font-weight:600; letter-spacing:1px; }
 
-  /* THEME TOGGLE */
+  .lilly-logo {
+    position:fixed; top:8px; left:16px; z-index:9999;
+    height:36px; width:auto; pointer-events:none;
+    mix-blend-mode: multiply; /* removes black bg on light mode */
+  }
+  [data-theme="dark"] .lilly-logo {
+    mix-blend-mode: normal;
+  }
   .theme-toggle {
-    position:fixed; top:20px; right:24px; z-index:400;
-    display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;
-  }
-  .toggle-track {
-    width:46px; height:26px; border-radius:999px;
+    position:fixed; top:16px; right:20px; z-index:9999;
+    width:48px; height:26px; border-radius:999px;
     background:var(--bg2); border:1.5px solid var(--border);
-    position:relative; cursor:pointer;
+    cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    padding:0; outline:none; transition:border-color 0.2s;
   }
+  .theme-toggle:hover { border-color:var(--red); }
   .toggle-knob {
     position:absolute; top:3px; left:3px;
     width:18px; height:18px; border-radius:50%;
@@ -125,8 +141,7 @@
     font-size:10px; line-height:1;
     transition:transform 0.4s cubic-bezier(.77,0,.18,1);
   }
-  [data-theme="dark"] .toggle-knob { transform:translateX(20px); }
-  .toggle-label { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:2px; text-transform:uppercase; }
+  [data-theme="dark"] .toggle-knob { transform:translateX(22px); }
 
   /* SHARED */
   .eyebrow { font-size:11px; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--red); margin-bottom:14px; }
@@ -206,6 +221,7 @@
 
   <!-- SINGLE PERSISTENT TOP BAR -->
   <div class="top-bar"></div>
+<img id="lillyLogo" class="lilly-logo" alt="Lilly" />
 
   <!-- THEME TOGGLE -->
   <div class="theme-toggle" id="themeToggle">
@@ -215,7 +231,7 @@
     </div>
   </div>
 
-<div class="deck">
+<div class="shell"><div class="deck">
 
   <!-- SLIDE 1: HERO -->
   <div class="slide active" id="s1">
@@ -399,9 +415,12 @@
     </div>
   </div>
 
-</div>
+</div><!-- /deck -->
+</div><!-- /shell -->
 
-<!-- NAV -->
+<!-- OUTSIDE SHELL — fixed to viewport -->
+<div class="top-bar"></div>
+
 <div class="nav">
   <button id="prev">←</button>
   <div class="dots" id="dotContainer"></div>
@@ -482,22 +501,30 @@
     }));
   });
 
-  // Theme toggle
+  // Load Lilly logo from uploaded file
+  (async () => {
+    try {
+      const data = await window.fs.readFile('image1.png');
+      const blob = new Blob([data], { type: 'image/png' });
+      const url  = URL.createObjectURL(blob);
+      document.getElementById('lillyLogo').src = url;
+    } catch(e) { console.warn('Logo not loaded', e); }
+  })();
   const html = document.documentElement;
-  const toggleEl = document.getElementById('themeToggle');
-  const labelEl = document.getElementById('themeLabel');
-  const iconEl = document.getElementById('toggleIcon');
   let dark = false;
 
-  toggleEl.addEventListener('click', () => {
+  const btn = document.createElement('button');
+  btn.id = 'themeToggle';
+  btn.setAttribute('aria-label','Toggle theme');
+  btn.className = 'theme-toggle';
+  btn.innerHTML = '<div class="toggle-knob"><span id="toggleIcon">☀️</span></div>';
+  document.body.appendChild(btn);
+
+  btn.onclick = function() {
     dark = !dark;
-    // Stagger class causes cascading delay on active slide children
-    html.classList.add('theme-shifting');
     html.setAttribute('data-theme', dark ? 'dark' : 'light');
-    labelEl.textContent = dark ? 'Dark' : 'Light';
-    iconEl.textContent  = dark ? '🌙' : '☀️';
-    setTimeout(() => html.classList.remove('theme-shifting'), 800);
-  });
+    document.getElementById('toggleIcon').textContent = dark ? '🌙' : '☀️';
+  };
 </script>
 </body>
 </html>
