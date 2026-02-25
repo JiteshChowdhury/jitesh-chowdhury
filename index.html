@@ -118,15 +118,15 @@
   .slide-counter { font-size:11px; color:var(--muted); min-width:36px; text-align:center; font-weight:600; letter-spacing:1px; }
 
   .lilly-logo {
-    position:fixed; top:8px; left:16px; z-index:9999;
-    height:36px; width:auto; pointer-events:none;
+    position:fixed; top:12px; left:16px; z-index:9999;
+    height:50px; width:auto; pointer-events:none;
     mix-blend-mode: multiply; /* removes black bg on light mode */
   }
   [data-theme="dark"] .lilly-logo {
     mix-blend-mode: normal;
   }
   .theme-toggle {
-    position:fixed; top:16px; right:20px; z-index:9999;
+    position:fixed; top:12px; right:20px; z-index:9999;
     width:48px; height:26px; border-radius:999px;
     background:var(--bg2); border:1.5px solid var(--border);
     cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1);
@@ -151,8 +151,8 @@
 
   /* SLIDE 1: HERO */
   #s1 .slide-inner { justify-content:center; position:relative; }
-  .s1-deco { position:absolute; right:60px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:12px; font-size:130px; font-weight:800; line-height:1; color:var(--text); letter-spacing:-4px; user-select:none; pointer-events:none; opacity:0; }
-  .s1-deco.ready { opacity:0.05; }
+  .s1-deco { position:absolute; right:60px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:12px; font-size:130px; font-weight:800; line-height:1; color:var(--text); letter-spacing:-4px; user-select:none; pointer-events:none; opacity:0; visibility:hidden; font-family:'Pacifico',cursive; }
+  .s1-deco.ready { opacity:0.05; visibility:visible; }
   .s1-name { font-size:clamp(52px,7vw,88px); font-weight:800; line-height:1; letter-spacing:-2px; color:var(--text); }
   .s1-name span { color:var(--red); }
   .s1-tags { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
@@ -236,7 +236,7 @@
   <!-- SLIDE 1: HERO -->
   <div class="slide active" id="s1">
     <div class="slide-inner">
-      <div class="s1-deco" id="s1deco"><div>JC</div></div>
+      <div class="s1-deco" id="s1deco"></div>
       <div class="eyebrow">Sr. Principal Visual Data Scientist · Eli Lilly</div>
       <div class="s1-name">Jitesh<br><span>Chowdhury</span></div>
       <div class="s1-tags">
@@ -504,8 +504,9 @@
   // Load Lilly logo from uploaded file
   (async () => {
     try {
-      const data = await window.fs.readFile('image1.png');
-      const blob = new Blob([data], { type: 'image/png' });
+      const response = await fetch('image/lillyLogo.png');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
       const url  = URL.createObjectURL(blob);
       document.getElementById('lillyLogo').src = url;
     } catch(e) { console.warn('Logo not loaded', e); }
