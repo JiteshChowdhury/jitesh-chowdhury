@@ -117,15 +117,7 @@
   .dot.active { background:var(--red); border-color:var(--red); transform:scale(1.3); }
   .slide-counter { font-size:11px; color:var(--muted); min-width:36px; text-align:center; font-weight:600; letter-spacing:1px; }
 
-  .lilly-logo {
-    display:block; margin-bottom:12px;
-    max-width:6rem; height:auto; width:100%;
-    pointer-events:none;
-    mix-blend-mode: multiply; /* removes black bg on light mode */
-  }
-  [data-theme="dark"] .lilly-logo {
-    mix-blend-mode: normal;
-  }
+
   .theme-toggle {
     position:fixed; top:12px; right:20px; z-index:9999;
     width:48px; height:26px; border-radius:999px;
@@ -236,7 +228,6 @@
   <!-- SLIDE 1: HERO -->
   <div class="slide active" id="s1">
     <div class="slide-inner">
-      <img id="lillyLogo" class="lilly-logo" alt="Lilly" />
       <div class="s1-deco" id="s1deco"></div>
       <div class="eyebrow">Sr. Principal Visual Data Scientist · Eli Lilly</div>
       <div class="s1-name">Jitesh<br><span>Chowdhury</span></div>
@@ -502,16 +493,7 @@
     }));
   });
 
-  // Load Lilly logo from uploaded file
-  (async () => {
-    try {
-      const response = await fetch('image/lillyLogo.png');
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const blob = await response.blob();
-      const url  = URL.createObjectURL(blob);
-      document.getElementById('lillyLogo').src = url;
-    } catch(e) { console.warn('Logo not loaded', e); }
-  })();
+
   const html = document.documentElement;
   let dark = false;
 
