@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinic Management Platform — Comprehensive Design Document</title>
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     ============================================================ */
+  :root {
+    --bg: #faf8f3;
+    --paper: #ffffff;
+    --paper-2: #f6f2e7;
+    --ink: #1a1a1a;
+    --ink-soft: #3a3a3a;
+    --muted: #6a6a64;
+    --rule: #d8d3c4;
+    --rule-soft: #ece7d9;
+
+    --fd-bg: #fdf3e3; --fd-ink: #8a5a17; --fd-line: #d9b377;
+    --doc-bg: #e9eef5; --doc-ink: #1f3a5f; --doc-line: #7e9bbf;
+    --pat-bg: #e6efe7; --pat-ink: #2a5a3c; --pat-line: #88ae93;
+    --diag-bg: #f1ebf2; --diag-ink: #4f3a55; --diag-line: #a895ae;
+
+    --accent: #8b1a1a;
+    --accent-soft: #f4ede4;
+    --accent-2: #1f3a5f;
+
+    --p0-bg: #f3d6d6; --p0-ink: #7a1a1a;
+    --p1-bg: #f4e6c9; --p1-ink: #6a4a10;
+    --p2-bg: #d6e2eb; --p2-ink: #1f3a5f;
+    --p3-bg: #e8e8e8; --p3-ink: #555;
+
+    --emo-pos-bg: #d6e8d6; --emo-pos-ink: #2a5a2a;
+    --emo-neu-bg: #e8e8e0; --emo-neu-ink: #555;
+    --emo-neg-bg: #f3d6d6; --emo-neg-ink: #7a1a1a;
+    --emo-anx-bg: #f4e6c9; --emo-anx-ink: #6a4a10;
+
+    --max-w: 980px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .container { max-width: var(--max-w); margin: 0 auto; padding: 56px 32px 88px; }
+
+  /* ============================================================
+     TYPOGRAPHY
+     ============================================================ */
+  h1, h2, h3, h4, .ui, th, .badge, .pill, .nav, .toc { font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-feature-settings: 'ss01' on; }
+  h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 6px; }
+  .subtitle { font-family: 'DM Sans', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 4px; }
+  .byline { font-size: 13px; color: var(--muted); margin: 14px 0 32px; padding: 8px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-family: 'DM Sans', sans-serif; }
+  p { margin: 0 0 14px; }
+
+  /* ============================================================
+     SECTION HEADERS
+     ============================================================ */
+  .section-head {
+    margin: 80px 0 12px;
+    padding: 22px 0 10px;
+    border-bottom: 2px solid var(--ink);
+    scroll-margin-top: 24px;
+  }
+  .section-head .num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .section-head h2 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1.2;
+  }
+  .section-head .desc {
+    font-size: 15.5px;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    line-height: 1.55;
+    max-width: 680px;
+  }
+
+  h3 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin: 36px 0 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--rule);
+  }
+  h4 { font-size: 16px; font-weight: 700; margin: 24px 0 6px; }
+
+  /* ============================================================
+     EXECUTIVE SUMMARY + KEY INSIGHTS
+     ============================================================ */
+  .exec-summary {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 24px 28px;
+    margin: 24px 0 32px;
+    border-radius: 3px;
+  }
+  .exec-summary .lab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .exec-summary p { font-size: 16px; line-height: 1.6; }
+  .exec-summary p:last-child { margin-bottom: 0; }
+
+  /* TOC */
+  .toc {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    padding: 18px 24px;
+    margin: 28px 0;
+    border-radius: 3px;
+  }
+  .toc-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 28px;
+  }
+  @media (max-width: 700px) { .toc-list { grid-template-columns: 1fr; } }
+  .toc-list li {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.4;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc-list li:last-child { border-bottom: none; }
+  .toc-list a {
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .toc-list a:hover { color: var(--accent); }
+  .toc-list .tnum {
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    width: 22px;
+  }
+
+  /* Insight cards grid */
+  .insights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 18px 0 24px;
+  }
+  @media (max-width: 700px) { .insights-grid { grid-template-columns: 1fr; } }
+  .insight {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 14px 16px;
+    border-radius: 3px;
+    border-top: 3px solid var(--accent);
+  }
+  .insight .insight-num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .insight .insight-title {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .insight .insight-body { font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+
+  /* ============================================================
+     PRIORITY PILLS
+     ============================================================ */
+  .pill {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 2px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-right: 8px;
+    vertical-align: 2px;
+  }
+  .p0 { background: var(--p0-bg); color: var(--p0-ink); }
+  .p1 { background: var(--p1-bg); color: var(--p1-ink); }
+  .p2 { background: var(--p2-bg); color: var(--p2-ink); }
+  .p3 { background: var(--p3-bg); color: var(--p3-ink); }
+
+  /* ============================================================
+     GAP / CORNER-CASE CATEGORY CARDS
+     ============================================================ */
+  .cat-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    padding: 20px 24px;
+    margin: 16px 0;
+    border-radius: 3px;
+  }
+  .cat-card.cc { border-left-color: var(--accent-2); }
+  .cat-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .cat-frame {
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .item-list { list-style: none; padding: 0; margin: 0; }
+  .item-list > li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+  .item-list > li:last-child { border-bottom: none; padding-bottom: 0; }
+  .item-list b { font-weight: 600; }
+  .item-list .scenario {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    padding-left: 14px;
+    border-left: 2px solid var(--rule);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .item-list .resolution {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    padding-left: 14px;
+  }
+  .item-list .resolution::before {
+    content: "→ ";
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .xref {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 6px;
+  }
+  .xref::before { content: "↗ "; }
+
+  /* Coverage scorecard */
+  .coverage-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 13.5px;
+  }
+  .coverage-table th, .coverage-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+    vertical-align: top;
+  }
+  .coverage-table th {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .coverage-table .bar {
+    display: inline-block;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 1px;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  /* P0 priority summary at top of section */
+  .priority-summary {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 16px 20px;
+    margin: 16px 0 24px;
+    border-radius: 3px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 700px) { .priority-summary { grid-template-columns: repeat(2, 1fr); } }
+  .priority-summary .ps-cell { text-align: center; }
+  .priority-summary .ps-num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .priority-summary .ps-lab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .ps-p0 .ps-num { color: var(--p0-ink); }
+  .ps-p1 .ps-num { color: var(--p1-ink); }
+  .ps-p2 .ps-num { color: var(--p2-ink); }
+  .ps-p3 .ps-num { color: var(--p3-ink); }
+
+  /* ============================================================
+     JOURNEYS
+     ============================================================ */
+  .journey {
+    margin: 32px 0 56px;
+    padding: 22px 0 0;
+    border-top: 1px solid var(--rule);
+  }
+  .journey-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .journey-meta b { color: var(--ink); font-weight: 600; }
+  .journey-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+  }
+  .journey-sub {
+    font-size: 14.5px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 18px;
+  }
+  .stage-grid {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 0;
+  }
+  .stage-row { display: contents; }
+  .stage-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 14px 12px 14px 0;
+    border-right: 1.5px solid var(--accent);
+    margin-right: 14px;
+    text-align: right;
+    border-top: 1px solid var(--rule);
+  }
+  .stage-content { padding: 14px 0; border-top: 1px solid var(--rule); }
+  .stage-row:first-child .stage-name,
+  .stage-row:first-child .stage-content { border-top: none; }
+  .stage-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 18px;
+    margin-bottom: 6px;
+  }
+  @media (max-width: 700px) {
+    .stage-grid { grid-template-columns: 1fr; }
+    .stage-name { text-align: left; border-right: none; border-left: 3px solid var(--accent); padding: 10px 0 4px 12px; margin-right: 0; }
+    .stage-block { grid-template-columns: 1fr; gap: 4px; }
+  }
+  .lab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .stage-content p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.5; }
+  .stage-content .quote {
+    font-style: italic;
+    color: var(--ink-soft);
+    border-left: 2px solid var(--rule);
+    padding-left: 12px;
+    margin: 4px 0 10px;
+    font-size: 14px;
+  }
+  .stage-content ul { padding-left: 18px; margin: 0 0 10px; font-size: 14px; }
+  .stage-content ul li { margin-bottom: 3px; }
+
+  .emo {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 2px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-right: 6px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .emo-pos { background: var(--emo-pos-bg); color: var(--emo-pos-ink); }
+  .emo-neu { background: var(--emo-neu-bg); color: var(--emo-neu-ink); }
+  .emo-neg { background: var(--emo-neg-bg); color: var(--emo-neg-ink); }
+  .emo-anx { background: var(--emo-anx-bg); color: var(--emo-anx-ink); }
+
+  .opp {
+    background: var(--accent-soft);
+    border-left: 2px solid var(--accent);
+    padding: 8px 12px;
+    font-size: 13.5px;
+    margin: 6px 0 0;
+    border-radius: 0 2px 2px 0;
+  }
+  .opp .lab { color: var(--accent); margin-bottom: 2px; }
+
+  /* ============================================================
+     SERVICE BLUEPRINT
+     ============================================================ */
+  .blueprint-wrap {
+    overflow-x: auto;
+    margin: 24px 0 32px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    border-radius: 3px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .bp-table {
+    width: 100%;
+    min-width: 1200px;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+  .bp-table th, .bp-table td {
+    padding: 10px 12px;
+    border: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  .bp-table thead th {
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    text-align: center;
+  }
+  .bp-table thead th:first-child {
+    background: var(--bg);
+    color: var(--ink);
+    text-align: left;
+    border-right: 2px solid var(--ink);
+  }
+  .bp-table tbody th {
+    background: var(--bg);
+    text-align: left;
+    width: 140px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    border-right: 2px solid var(--ink);
+    vertical-align: top;
+  }
+  .bp-table tbody th .layer-sub {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    margin-top: 2px;
+    font-style: italic;
+  }
+  .bp-customer td { background: var(--pat-bg); }
+  .bp-touchpoint td { background: #fffaf0; }
+  .bp-frontstage td { background: var(--fd-bg); }
+  .bp-backstage td { background: var(--diag-bg); }
+  .bp-support td { background: var(--doc-bg); }
+  .bp-line {
+    background: var(--ink) !important;
+    color: var(--bg);
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: center;
+    padding: 4px 6px !important;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .bp-table td b { font-weight: 600; }
+  .scroll-hint {
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .bp-context {
+    background: var(--paper-2);
+    padding: 14px 20px;
+    border-radius: 3px;
+    margin: 16px 0;
+    font-size: 14.5px;
+    border-left: 3px solid var(--accent-2);
+  }
+  .bp-context b { font-weight: 600; }
+
+  /* ============================================================
+     PRINCIPLES
+     ============================================================ */
+  .principles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 20px 0 24px;
+  }
+  @media (max-width: 700px) { .principles-grid { grid-template-columns: 1fr; } }
+  .principle {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+    border-radius: 3px;
+  }
+  .principle-num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .principle-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15.5px;
+    font-weight: 700;
+    margin: 8px 0 6px;
+    line-height: 1.3;
+  }
+  .principle-body { font-size: 14px; color: var(--ink-soft); line-height: 1.55; }
+  .principle-body em { color: var(--accent); font-style: normal; font-weight: 600; }
+
+  /* ============================================================
+     P0 CHECKLIST TABLE
+     ============================================================ */
+  .p0-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 13.5px;
+  }
+  .p0-table th, .p0-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+    vertical-align: top;
+  }
+  .p0-table thead th {
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .p0-table .item-name { font-weight: 600; }
+  .p0-table .scen { font-size: 12.5px; color: var(--muted); margin-top: 2px; font-style: italic; }
+  .p0-table .src-ref {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  /* ============================================================
+     CALLOUTS
+     ============================================================ */
+  .callout {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 3px;
+    font-size: 14.5px;
+    border-left: 3px solid var(--accent);
+  }
+  .callout .clab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .legend-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: 10px 0 18px;
+    padding: 12px 16px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11.5px;
+    align-items: center;
+  }
+
+  @media (max-width: 640px) {
+    .container { padding: 32px 18px 64px; }
+    h1 { font-size: 26px; }
+    .section-head h2 { font-size: 22px; }
+    .insights-grid, .principles-grid { gap: 10px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <div class="subtitle">Product spec · Clinic management platform</div>
+  <h1>Comprehensive design document</h1>
+  <h1 style="font-size:18px;font-weight:500;color:var(--muted);margin-top:0;">Gaps · Corner cases · Journeys · Blueprints · Principles</h1>
+  <div class="byline">
+    The complete design layer underneath the four-app spec. <em>Read the executive summary first.</em>
+  </div>
+
+  <!-- ============================================================
+       EXECUTIVE SUMMARY
+       ============================================================ -->
+  <div class="exec-summary">
+    <div class="lab">Executive Summary</div>
+    <p>The v2 features-and-flows spec describes a working product on the happy path. This document interrogates everything else — what's missing, what breaks under stress, how the experience feels, and what design discipline keeps it coherent.</p>
+    <p>It is organised as six sections, each answering a specific question. <b>A · Gaps</b> — what features are missing? <b>B · Corner cases</b> — what weird situations break the spec? <b>C · User journeys</b> — what does the experience feel like over time? <b>D · Service blueprints</b> — who does what backstage to produce the experience? <b>E · Design principles</b> — what to remember when in doubt. <b>F · P0 checklist</b> — the single page that says what must ship before customer one.</p>
+    <p>Read in order if you have an hour. Read sections F → A → C if you have ten minutes. <em>Companion to the v2 features &amp; flows document and the Nepal market thesis memo.</em></p>
+  </div>
+
+  <!-- ============================================================
+       TOC
+       ============================================================ -->
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ul class="toc-list">
+      <li><a href="#insights"><span class="tnum">§</span><span>Top 10 critical insights</span></a></li>
+      <li><a href="#gaps"><span class="tnum">A</span><span>Gaps in the current spec</span></a></li>
+      <li><a href="#corner-cases"><span class="tnum">B</span><span>Corner cases &amp; edge conditions</span></a></li>
+      <li><a href="#journeys"><span class="tnum">C</span><span>User journeys</span></a></li>
+      <li><a href="#blueprints"><span class="tnum">D</span><span>Service blueprints</span></a></li>
+      <li><a href="#principles"><span class="tnum">E</span><span>Design principles</span></a></li>
+      <li><a href="#p0-checklist"><span class="tnum">F</span><span>P0 master checklist</span></a></li>
+    </ul>
+  </div>
+
+  <!-- ============================================================
+       KEY INSIGHTS
+       ============================================================ -->
+  <div class="section-head" id="insights">
+    <span class="num">§</span>
+    <h2>Top 10 critical insights</h2>
+    <p class="desc">If you read nothing else, read these. The most consequential conclusions from the audit, in priority order.</p>
+  </div>
+
+  <div class="insights-grid">
+    <div class="insight">
+      <div class="insight-num">01</div>
+      <div class="insight-title">Offline mode is the real moat</div>
+      <div class="insight-body">Nepali clinics drop internet daily. A cloud SaaS that doesn't work offline gets rejected at month one — regardless of how good its features are. <em>This is the single biggest P0 in the entire document.</em></div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">02</div>
+      <div class="insight-title">First seven days post-go-live decide everything</div>
+      <div class="insight-body">SaaS in Nepal die during onboarding, not during build. Dedicated CS handholding, done-for-you Excel migration, and 7-day intensive support is non-negotiable. Spec must include this as a process, not a feature.</div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">03</div>
+      <div class="insight-title">The recall loop is the retention engine</div>
+      <div class="insight-body">Chronic-disease recall (Flow 4) converts a one-time visit into a five-year relationship. It is the difference between $40 and $400 per-patient LTV. Build it for MVP, not Wave 3.</div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">04</div>
+      <div class="insight-title">Voice-recorded ambient consult is the differentiator</div>
+      <div class="insight-body">Nothing in the Nepali market has it. Doctors hate typing in English on Devanagari keyboards. Ambient capture + AI visit notes is the highest-impact UX moment in the product — defensible against every local incumbent.</div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">05</div>
+      <div class="insight-title">Tally export determines whether owners stay</div>
+      <div class="insight-body">Every clinic's accountant lives in Tally Prime. Without a clean export, the owner has to do double-entry — and will silently churn within six months. <em>Boring; non-negotiable.</em></div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">06</div>
+      <div class="insight-title">Triage is a P0, not a luxury</div>
+      <div class="insight-body">The current spec assumes first-come-first-served at the doctor. Real clinics need emergency / pediatric / elderly to jump the queue — with visible reasons so other patients don't lose trust.</div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">07</div>
+      <div class="insight-title">External report ingestion is trust-building, not a feature</div>
+      <div class="insight-body">Patients use multiple clinics. Welcoming their external reports — instead of forcing them to start over — signals respect and removes the social friction of "telling on themselves." Clinical continuity follows.</div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">08</div>
+      <div class="insight-title">Granular permissions matter more than you think</div>
+      <div class="insight-body">Discount limits, refund authorisation, sensitive-case access, owner-only financial views — without these, fraud and gossip become real risks in a small-team clinic environment. The owner's trust in the system depends on it.</div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">09</div>
+      <div class="insight-title">Identity is messier than the spec assumes</div>
+      <div class="insight-body">Same patient registers under three names. Mobile is shared by a family. Children inherit a parent's number. Patient changes their name. Without fuzzy matching and family linking from day one, the patient base degrades into garbage in 18 months.</div>
+    </div>
+    <div class="insight">
+      <div class="insight-num">10</div>
+      <div class="insight-title">Family-level account is the referral engine</div>
+      <div class="insight-body">A satisfied chronic-care patient brings 2–4 family members. Family linking is the lowest-CAC growth channel available — and the product should make it one tap, not a settings-menu chore.</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SECTION A: GAPS
+       ============================================================ -->
+  <div class="section-head" id="gaps">
+    <span class="num">A</span>
+    <h2>Gaps in the current spec</h2>
+    <p class="desc">An honest audit. The v2 spec covers the happy path well; this is where it leaks. Each gap is tagged by priority — <span class="pill p0">P0</span> blocks MVP, <span class="pill p1">P1</span> first 90 days post-launch, <span class="pill p2">P2</span> year one, <span class="pill p3">P3</span> year two and beyond.</p>
+  </div>
+
+  <div class="priority-summary">
+    <div class="ps-cell ps-p0"><div class="ps-num">23</div><div class="ps-lab">P0 · MVP blockers</div></div>
+    <div class="ps-cell ps-p1"><div class="ps-num">38</div><div class="ps-lab">P1 · First 90 days</div></div>
+    <div class="ps-cell ps-p2"><div class="ps-num">35</div><div class="ps-lab">P2 · Year one</div></div>
+    <div class="ps-cell ps-p3"><div class="ps-num">14</div><div class="ps-lab">P3 · Year two+</div></div>
+  </div>
+
+  <!-- 1. Identity -->
+  <div class="cat-card">
+    <div class="cat-title">A·1 · Identity, registration &amp; consent</div>
+    <div class="cat-frame">The spec assumes "search by mobile, register if new." Reality is messier — duplicates, shared phones, minors, foreigners.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Duplicate-patient detection.</b> Fuzzy match on name + DOB + mobile before allowing new registration.<span class="scenario">"Ram Bahadur Shrestha" on three different mobile numbers from three different visits — all the same person.</span><span class="resolution">Soundex + Levenshtein on name + DOB match → soft-warning duplicate flag at registration.</span></li>
+      <li><span class="pill p1">P1</span><b>Shared-mobile handling.</b> Multiple family members on one phone is the Nepali norm.<span class="scenario">Husband, wife, two children all share one mobile. Patient App OTP login resolves to "which family member?"</span><span class="resolution">"This number is shared by N people" flag with disambiguation at sign-in; family-linked profiles.</span></li>
+      <li><span class="pill p1">P1</span><b>Minor / guardian consent.</b> Patient under 18 needs guardian relationship and consent.</li>
+      <li><span class="pill p1">P1</span><b>Patient identity verification at sample collection.</b><span class="scenario">Two patients with similar names. Tech draws blood from the wrong one. Single most-common diagnostic error.</span><span class="resolution">Two-factor verification at draw — name + DOB read aloud, barcode scanned against the active order.</span></li>
+      <li><span class="pill p2">P2</span><b>National ID / Nagarik App integration</b> as optional secondary identifier.</li>
+      <li><span class="pill p2">P2</span><b>Foreign nationals with passport-based ID</b> — no PAN, often no Nepali mobile.</li>
+      <li><span class="pill p2">P2</span><b>Privacy preferences per patient.</b> Opt-out of marketing, WhatsApp, analytics.</li>
+      <li><span class="pill p1">P1</span><b>Right-to-be-forgotten flow</b> per Privacy Act 2018.</li>
+      <li><span class="pill p2">P2</span><b>Patient access request — full record export.</b> SLA, auth, format spec.</li>
+    </ul>
+  </div>
+
+  <!-- 2. Clinical depth -->
+  <div class="cat-card">
+    <div class="cat-title">A·2 · Clinical workflow depth</div>
+    <div class="cat-frame">The spec stops at "doctor sees patient, prescribes." Real clinical work has triage, nurses, weight-based dosing, special populations, multi-visit care plans.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Triage / priority queue.</b> Emergency, pediatric, elderly should jump the queue.<span class="scenario">A 78-year-old with chest pain is told to wait behind 12 routine consults because tokens are FCFS.</span><span class="resolution">Priority levels with visible reasons displayed to other waiting patients ("Patient ahead was an emergency").</span></li>
+      <li><span class="pill p0">P0</span><b>Nurse / vitals-tech step before doctor.</b> Most clinics take vitals separately first. The flow conflates this with the doctor.</li>
+      <li><span class="pill p1">P1</span><b>Pre-consultation symptom intake.</b> Patient fills on phone before walking in; doctor sees pre-populated form.</li>
+      <li><span class="pill p1">P1</span><b>Pediatric weight-based dosing.</b> Drug calculator must take weight as input.<span class="scenario">3-year-old, 14 kg, paracetamol — "10–15 mg/kg q6h." Doctor needs the calculator inline, not in their head.</span></li>
+      <li><span class="pill p1">P1</span><b>Pregnancy contraindication alerts.</b> Pregnant patient + teratogenic drug = hard alert.</li>
+      <li><span class="pill p2">P2</span><b>Renal / hepatic dose adjustment</b> based on lab values.</li>
+      <li><span class="pill p2">P2</span><b>Care plan across visits.</b> Currently each visit is discrete; chronic care needs a longitudinal plan with goals.</li>
+      <li><span class="pill p2">P2</span><b>Disease registries.</b> Diabetic, hypertension, with population-level dashboards.</li>
+      <li><span class="pill p2">P2</span><b>Procedure consent forms</b> templated, signed, stored.</li>
+      <li><span class="pill p2">P2</span><b>Discharge summary template</b> for clinics doing day-care.</li>
+      <li><span class="pill p3">P3</span><b>Group consultations</b> (family planning, antenatal classes).</li>
+    </ul>
+  </div>
+
+  <!-- 3. Prescription -->
+  <div class="cat-card">
+    <div class="cat-title">A·3 · Prescription &amp; medication management</div>
+    <div class="cat-frame">Writing a prescription is the easy part. Refills, controlled substances, hand-off to pharmacy, drug recalls — none are in the spec.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Prescription-to-pharmacy hand-off.</b><span class="scenario">Doctor prescribes; what happens next? In-house pharmacy auto-receives? Patient takes paper to external pharmacy? Currently undefined.</span><span class="resolution">Configurable per clinic: in-house auto-route, external-print-only, or patient-choice.</span></li>
+      <li><span class="pill p1">P1</span><b>Refill workflow.</b> Doctor sets <em>"refill × 3 months"</em> at original prescribing.</li>
+      <li><span class="pill p1">P1</span><b>Controlled-substances ledger</b> per DDA. Legal liability if missing.</li>
+      <li><span class="pill p1">P1</span><b>Generic substitution consent.</b> Pharmacy may substitute; doctor explicitly allows or disallows.</li>
+      <li><span class="pill p2">P2</span><b>Patient drug-instruction sheet</b> auto-printed in Nepali.</li>
+      <li><span class="pill p2">P2</span><b>Drug recall handling.</b> Identify all patients on recalled batch.</li>
+      <li><span class="pill p3">P3</span><b>Compound preparations</b> for specialised pharmacies.</li>
+    </ul>
+  </div>
+
+  <!-- 4. Diagnostic -->
+  <div class="cat-card">
+    <div class="cat-title">A·4 · Diagnostic depth</div>
+    <div class="cat-frame">Pathology is multi-day. Microbiology is multi-day. The spec assumes same-visit results.</div>
+    <ul class="item-list">
+      <li><span class="pill p1">P1</span><b>Microbiology workflow.</b> Culture → preliminary → sensitivity → final. 3–5 day cycle.</li>
+      <li><span class="pill p1">P1</span><b>Histopathology / cytology workflow.</b> Grossing → processing → embedding → staining → reporting. Multi-step.</li>
+      <li><span class="pill p1">P1</span><b>Reflex testing.</b> "If TSH abnormal, auto-add Free T3/T4."</li>
+      <li><span class="pill p1">P1</span><b>Delta check.</b> Flag implausibly large change from prior result.</li>
+      <li><span class="pill p2">P2</span><b>Test panels with discount.</b> Lipid profile, LFT priced as panel.</li>
+      <li><span class="pill p2">P2</span><b>Result amendment after release</b> with patient notification.</li>
+      <li><span class="pill p2">P2</span><b>Add-on test from existing sample</b> within stability window.</li>
+      <li><span class="pill p3">P3</span><b>Reference range customisation</b> for paediatric vs adult vs geriatric.</li>
+    </ul>
+  </div>
+
+  <!-- 5. Billing -->
+  <div class="cat-card">
+    <div class="cat-title">A·5 · Billing &amp; financial sophistication</div>
+    <div class="cat-frame">"Bill cart, pay, receipt" works for cash. Real clinics deal with insurance, corporates, packages, refunds, accounting integration.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>VAT-exempt vs taxable split on receipt.</b> Medical consultation largely VAT-exempt; pharmacy is taxable. IRD audits this.</li>
+      <li><span class="pill p1">P1</span><b>NHIP claim packet generation</b> for HIB-enrolled patients.</li>
+      <li><span class="pill p1">P1</span><b>SSF claim flow</b> for formal-sector employees.</li>
+      <li><span class="pill p1">P1</span><b>Private insurance pre-authorisation.</b></li>
+      <li><span class="pill p1">P1</span><b>Corporate billing</b> for monthly aggregated invoices.</li>
+      <li><span class="pill p1">P1</span><b>Package billing.</b> Maternity, surgery — fixed price across visits.</li>
+      <li><span class="pill p1">P1</span><b>Refund / partial refund flow</b> with full audit trail.</li>
+      <li><span class="pill p2">P2</span><b>Bad debt / write-off</b> with formal authorisation.</li>
+      <li><span class="pill p2">P2</span><b>Nepali fiscal year close</b> (mid-July to mid-July, BS-aware).</li>
+      <li><span class="pill p2">P2</span><b>Multi-cashier with separate drawers.</b></li>
+      <li><span class="pill p3">P3</span><b>Foreign currency invoicing</b> for foreign patients.</li>
+    </ul>
+  </div>
+
+  <!-- 6. Pharmacy -->
+  <div class="cat-card">
+    <div class="cat-title">A·6 · Pharmacy module</div>
+    <div class="cat-frame">Mentioned in Wave 3 of Front Desk but never specified. In-house pharmacy is a major revenue line for many Nepali clinics.</div>
+    <ul class="item-list">
+      <li><span class="pill p1">P1</span><b>Drug master with Nepal SKUs</b> (NDA-aligned brand-generic mapping).</li>
+      <li><span class="pill p1">P1</span><b>Stock with batch and expiry</b>; FEFO dispensing.</li>
+      <li><span class="pill p1">P1</span><b>Dispensing log per pharmacist.</b></li>
+      <li><span class="pill p1">P1</span><b>Purchase orders, vendor master, GRN, invoice match.</b></li>
+      <li><span class="pill p1">P1</span><b>Auto-reorder thresholds.</b></li>
+      <li><span class="pill p1">P1</span><b>Expiry alerts (60/30/15/7-day).</b></li>
+      <li><span class="pill p2">P2</span><b>Cold-chain monitoring</b> for vaccines, insulin, biologics.</li>
+      <li><span class="pill p2">P2</span><b>OTC walk-in sales</b> separate from prescription dispensing.</li>
+      <li><span class="pill p2">P2</span><b>Stock transfer between branches.</b></li>
+      <li><span class="pill p2">P2</span><b>Damage / wastage tracking.</b></li>
+      <li><span class="pill p3">P3</span><b>DDA-format controlled-substance ledger</b> for inspection.</li>
+    </ul>
+  </div>
+
+  <!-- 7. Roles & security -->
+  <div class="cat-card">
+    <div class="cat-title">A·7 · Roles, permissions &amp; security</div>
+    <div class="cat-frame">Front-desk / doctor / lab / owner is too coarse. Discount limits, refund auth, locum, sensitive cases, all need finer control.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Granular permissions.</b> Discount limit per role; refund auth threshold; deletion rights; owner-only financials.</li>
+      <li><span class="pill p0">P0</span><b>2FA for staff login</b>, especially owner/admin.</li>
+      <li><span class="pill p1">P1</span><b>Multi-clinic users.</b> Doctor at three clinics — context switch without re-login.</li>
+      <li><span class="pill p1">P1</span><b>Locum / temp staff with time-limited access.</b></li>
+      <li><span class="pill p1">P1</span><b>Sensitive-case access controls.</b> HIV, mental health, abortion — restricted view.</li>
+      <li><span class="pill p1">P1</span><b>Session timeout policies</b> with auto-logout.</li>
+      <li><span class="pill p1">P1</span><b>Failed-login lockout + alert.</b></li>
+      <li><span class="pill p2">P2</span><b>Audit log retention &amp; review interface.</b></li>
+      <li><span class="pill p2">P2</span><b>Encryption at rest with documented key management.</b></li>
+      <li><span class="pill p2">P2</span><b>Disaster recovery and backup retention policy</b> with stated RTO/RPO.</li>
+      <li><span class="pill p3">P3</span><b>Penetration test schedule</b> with finding-remediation SLAs.</li>
+    </ul>
+  </div>
+
+  <!-- 8. Data governance -->
+  <div class="cat-card">
+    <div class="cat-title">A·8 · Data governance &amp; privacy</div>
+    <div class="cat-frame">Privacy Act 2018, Telemedicine Guidelines 2077, EMR Directive 2081 — the spec is silent on all three.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Patient consent capture and versioning</b> at registration, telemedicine, and on policy change.</li>
+      <li><span class="pill p1">P1</span><b>Data localisation compliance.</b> EMR Directive may mandate Nepal-resident hosting.</li>
+      <li><span class="pill p1">P1</span><b>Data breach notification process</b> — defined before there's a breach.</li>
+      <li><span class="pill p2">P2</span><b>Granular consent for analytics, research, aggregated sharing.</b></li>
+      <li><span class="pill p2">P2</span><b>De-identified data export</b> for public-health partnerships.</li>
+      <li><span class="pill p3">P3</span><b>Patient data portability via FHIR.</b></li>
+    </ul>
+  </div>
+
+  <!-- 9. Integrations -->
+  <div class="cat-card">
+    <div class="cat-title">A·9 · External integrations</div>
+    <div class="cat-frame">Ten major external systems matter. The spec covers two (eSewa, Khalti).</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Tally Prime export</b> — every clinic accountant uses Tally.</li>
+      <li><span class="pill p1">P1</span><b>HIB eligibility API</b> for NHIP enrolment check.</li>
+      <li><span class="pill p1">P1</span><b>SSF integration</b> for employee verification.</li>
+      <li><span class="pill p1">P1</span><b>NMC verification API</b> for doctor registration check.</li>
+      <li><span class="pill p1">P1</span><b>DoHS HMIS reporting</b> — monthly aggregated indicators.</li>
+      <li><span class="pill p1">P1</span><b>Notifiable disease auto-reporting</b> to EDCD.</li>
+      <li><span class="pill p2">P2</span><b>Banking reconciliation</b> — wallet/bank settlement matching.</li>
+      <li><span class="pill p2">P2</span><b>Hospital referral with EMR snapshot.</b></li>
+      <li><span class="pill p2">P2</span><b>Private insurance APIs</b> (top 5 Nepali insurers).</li>
+      <li><span class="pill p2">P2</span><b>Lab analyzer integration via HL7/ASTM.</b></li>
+      <li><span class="pill p2">P2</span><b>DICOM mini-PACS</b> for radiology.</li>
+      <li><span class="pill p3">P3</span><b>WhatsApp Business API</b> for legal bulk messaging.</li>
+      <li><span class="pill p3">P3</span><b>Pharma rep CRM</b> as adjacent revenue channel.</li>
+    </ul>
+  </div>
+
+  <!-- 10. Communication -->
+  <div class="cat-card">
+    <div class="cat-title">A·10 · Communication completeness</div>
+    <div class="cat-frame">SMS and WhatsApp aren't enough. Voice IVR, regional languages, DND compliance all matter.</div>
+    <ul class="item-list">
+      <li><span class="pill p1">P1</span><b>Voice call / IVR</b> for elderly patients.</li>
+      <li><span class="pill p1">P1</span><b>NTA DND compliance</b> for bulk SMS (legal requirement).</li>
+      <li><span class="pill p2">P2</span><b>Regional language SMS / WhatsApp</b> (Maithili, Bhojpuri, Newari).</li>
+      <li><span class="pill p2">P2</span><b>Email channel</b> for diaspora and corporate use.</li>
+      <li><span class="pill p2">P2</span><b>In-app notification centre</b> for reliability beyond push.</li>
+      <li><span class="pill p3">P3</span><b>Two-way SMS confirmations</b> ("reply 1 to confirm").</li>
+    </ul>
+  </div>
+
+  <!-- 11. Infrastructure -->
+  <div class="cat-card">
+    <div class="cat-title">A·11 · Infrastructure, devices &amp; offline mode</div>
+    <div class="cat-frame">Nepali clinics lose internet and power regularly. The spec assumes always-on cloud — this is the single biggest assumption error.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Offline mode with conflict-free sync.</b> Front Desk and Doc App must work when internet drops.<span class="scenario">Worldlink outage hits Lalitpur for 90 minutes. Clinic has 14 patients in queue. Without offline mode, the clinic stops entirely — and switches back to paper next week.</span><span class="resolution">CRDT-based local store; sync on reconnect; conflict resolution UI for rare collisions.</span></li>
+      <li><span class="pill p0">P0</span><b>Power-outage resilience.</b> Auto-save every action; recover from forced shutdown.</li>
+      <li><span class="pill p1">P1</span><b>Thermal receipt printer drivers.</b> Tested matrix of 8–10 common Chinese-import models.</li>
+      <li><span class="pill p1">P1</span><b>Barcode / QR scanner integration</b> for sample tracking.</li>
+      <li><span class="pill p2">P2</span><b>Tablet form-factor</b> for doctors who prefer iPad / Android tablet.</li>
+      <li><span class="pill p2">P2</span><b>Card swipe / POS terminal integration.</b></li>
+      <li><span class="pill p2">P2</span><b>Local print server / cache</b> for high-volume clinics.</li>
+      <li><span class="pill p3">P3</span><b>Wearable / smartwatch ingest</b> for chronic-care vitals.</li>
+    </ul>
+  </div>
+
+  <!-- 12. Multi-clinic -->
+  <div class="cat-card">
+    <div class="cat-title">A·12 · Multi-clinic / chain operations</div>
+    <div class="cat-frame">Single-clinic spec doesn't extend cleanly. Chains have specific needs and represent the path to ARPU expansion.</div>
+    <ul class="item-list">
+      <li><span class="pill p1">P1</span><b>Branch hierarchy and cross-branch patient lookup.</b></li>
+      <li><span class="pill p2">P2</span><b>Inter-branch referral with EMR snapshot.</b></li>
+      <li><span class="pill p2">P2</span><b>Centralised vs decentralised billing</b> per chain owner choice.</li>
+      <li><span class="pill p2">P2</span><b>Group reporting dashboard</b> across all branches.</li>
+      <li><span class="pill p2">P2</span><b>Stock transfer between branches</b> with NRB-compliant trail.</li>
+      <li><span class="pill p3">P3</span><b>Franchise model support</b> — different ownership, shared brand.</li>
+    </ul>
+  </div>
+
+  <!-- 13. Customer lifecycle -->
+  <div class="cat-card">
+    <div class="cat-title">A·13 · Customer lifecycle (sales, onboarding, support)</div>
+    <div class="cat-frame">The spec is the product. The customer lifecycle around it is entirely undefined and is where most Nepali SaaS die.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Sign-up &amp; trial flow</b> — self-serve or sales-assisted; trial duration and limits.</li>
+      <li><span class="pill p0">P0</span><b>Data migration from existing system</b> — Excel, paper, Okhati. Done-for-you, not self-serve.</li>
+      <li><span class="pill p0">P0</span><b>Training program for clinic staff</b> — 2-hour live + recorded videos in Nepali.</li>
+      <li><span class="pill p1">P1</span><b>Go-live support window</b> — first 7–14 days dedicated CS.</li>
+      <li><span class="pill p1">P1</span><b>Customer health scoring</b> — daily-active staff, billing-events-per-day, support tickets.</li>
+      <li><span class="pill p1">P1</span><b>In-app help / chat support.</b></li>
+      <li><span class="pill p1">P1</span><b>Knowledge base in Nepali and English.</b></li>
+      <li><span class="pill p2">P2</span><b>Support ticket system with SLA tracking.</b></li>
+      <li><span class="pill p2">P2</span><b>QBR for larger accounts.</b></li>
+      <li><span class="pill p2">P2</span><b>Customer advisory board / user community.</b></li>
+    </ul>
+  </div>
+
+  <!-- 14. Business model -->
+  <div class="cat-card">
+    <div class="cat-title">A·14 · Business model &amp; pricing surface</div>
+    <div class="cat-frame">No pricing logic in the spec. Self-serve subscription, tiers, upgrade flow — all undefined.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Pricing tiers</b> — solo / multi-doc / hospital. Per-user vs per-clinic.</li>
+      <li><span class="pill p0">P0</span><b>Subscription billing engine</b> — auto-debit via eSewa/Khalti/bank standing order.</li>
+      <li><span class="pill p1">P1</span><b>Free trial vs freemium decision.</b></li>
+      <li><span class="pill p1">P1</span><b>Annual vs monthly billing</b> with annual discount.</li>
+      <li><span class="pill p1">P1</span><b>Upgrade / downgrade with proration.</b></li>
+      <li><span class="pill p1">P1</span><b>Cancellation flow with data export.</b></li>
+      <li><span class="pill p2">P2</span><b>Add-on revenue streams</b> — SMS credits, payment take-rate, lab marketplace, e-prescription fees.</li>
+      <li><span class="pill p2">P2</span><b>Referral / partner discount program.</b></li>
+      <li><span class="pill p3">P3</span><b>White-label option</b> for diagnostic chains and pharma.</li>
+    </ul>
+  </div>
+
+  <!-- 15. MoHP coverage -->
+  <div class="cat-card">
+    <div class="cat-title">A·15 · MoHP EMR Directive 2081 — module coverage</div>
+    <div class="cat-frame">The directive mandates 21 modules. Below is honest coverage of the v2 spec vs what's still open.</div>
+    <table class="coverage-table">
+      <thead><tr><th>Module</th><th style="width:140px;">Coverage</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Patient registration</td><td><span class="bar" style="width:90%;"></span>Strong</td><td>Duplicate detection still missing</td></tr>
+        <tr><td>Outpatient (OPD)</td><td><span class="bar" style="width:85%;"></span>Strong</td><td>Triage, nurse-vitals step missing</td></tr>
+        <tr><td>Inpatient (IPD)</td><td><span class="bar" style="width:5%;"></span>Not covered</td><td>Out of scope for clinic SaaS</td></tr>
+        <tr><td>Emergency</td><td><span class="bar" style="width:10%;"></span>Minimal</td><td>Emergency-registration edge case missing</td></tr>
+        <tr><td>Pharmacy</td><td><span class="bar" style="width:30%;"></span>Partial</td><td>See A·6 — substantial work</td></tr>
+        <tr><td>Laboratory</td><td><span class="bar" style="width:80%;"></span>Strong</td><td>Multi-day flows missing</td></tr>
+        <tr><td>Radiology / imaging</td><td><span class="bar" style="width:60%;"></span>Adequate</td><td>DICOM/PACS specified, not detailed</td></tr>
+        <tr><td>Billing &amp; finance</td><td><span class="bar" style="width:55%;"></span>Adequate</td><td>Insurance, packages, refunds, Tally export missing</td></tr>
+        <tr><td>Insurance / claims</td><td><span class="bar" style="width:25%;"></span>Partial</td><td>NHIP, SSF, private insurer flows undefined</td></tr>
+        <tr><td>HMIS reporting</td><td><span class="bar" style="width:5%;"></span>Not covered</td><td>Mandatory monthly reporting missing</td></tr>
+        <tr><td>Telemedicine</td><td><span class="bar" style="width:50%;"></span>Adequate</td><td>Identity verification &amp; recording consent missing</td></tr>
+        <tr><td>Bed / ward</td><td><span class="bar" style="width:0%;"></span>N/A</td><td>Hospital scope</td></tr>
+        <tr><td>Operation theatre</td><td><span class="bar" style="width:0%;"></span>N/A</td><td>Hospital scope</td></tr>
+        <tr><td>Blood bank</td><td><span class="bar" style="width:0%;"></span>N/A</td><td>Hospital scope</td></tr>
+        <tr><td>Dietary</td><td><span class="bar" style="width:0%;"></span>N/A</td><td>Hospital scope</td></tr>
+        <tr><td>Inventory / stores</td><td><span class="bar" style="width:25%;"></span>Partial</td><td>Pharmacy yes; non-pharma not modelled</td></tr>
+        <tr><td>HR / payroll</td><td><span class="bar" style="width:0%;"></span>Not covered</td><td>Recommend integrating, not building</td></tr>
+        <tr><td>Telemed consent &amp; recording</td><td><span class="bar" style="width:30%;"></span>Partial</td><td>Per Guidelines 2077 — still soft</td></tr>
+        <tr><td>Patient portal</td><td><span class="bar" style="width:75%;"></span>Strong</td><td>Vault &amp; consent ledger thinner</td></tr>
+        <tr><td>Reporting &amp; analytics</td><td><span class="bar" style="width:55%;"></span>Adequate</td><td>HMIS export missing</td></tr>
+        <tr><td>Interoperability (HL7/FHIR)</td><td><span class="bar" style="width:20%;"></span>Partial</td><td>FHIR EMR-to-EMR not specified</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================================
+       SECTION B: CORNER CASES
+       ============================================================ -->
+  <div class="section-head" id="corner-cases">
+    <span class="num">B</span>
+    <h2>Corner cases &amp; edge conditions</h2>
+    <p class="desc">Gaps are missing features. Corner cases are the weird situations that the existing features must survive without breaking. <strong>Most production failures live here.</strong> Eight categories, organised by who or what triggers the edge.</p>
+  </div>
+
+  <!-- B.1 Patient identity edges -->
+  <div class="cat-card cc">
+    <div class="cat-title">B·1 · Patient identity edges</div>
+    <div class="cat-frame">Patients aren't tidy. They share phones, change names, lose phones, want anonymity, are minors, are foreign, are dying, or are dead.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Patient with no mobile phone.</b><span class="scenario">Elderly patient, daughter brings her in. Daughter's mobile is logged. Next year daughter moves abroad — mother loses access to her own records.</span><span class="resolution">Allow primary contact distinct from patient. On change, prompt update.</span></li>
+      <li><span class="pill p0">P0</span><b>Patient changes name (marriage / legal change).</b><span class="resolution">Name history with effective dates; receipts/prescriptions show name as-of-visit.</span></li>
+      <li><span class="pill p1">P1</span><b>Same name, different patients.</b><span class="scenario">"Ram Bahadur Shrestha" — 47 patients in the system.</span><span class="resolution">Disambiguate by DOB + last 4 of mobile + photo if captured.</span></li>
+      <li><span class="pill p1">P1</span><b>Anonymous testing requirement</b> (HIV, STI, drug abuse).<span class="resolution">Pseudonym field, separate from primary record; opt-in linkage later.</span></li>
+      <li><span class="pill p1">P1</span><b>Mass-casualty event registration.</b><span class="scenario">Earthquake or bus accident — 30 patients arrive in 20 minutes, half unconscious.</span><span class="resolution">Bulk emergency-mode registration with placeholder IDs (e.g. EMG-2026-04-29-001) reconciled later.</span></li>
+      <li><span class="pill p1">P1</span><b>VIP / celebrity patient privacy.</b><span class="resolution">Pseudonym record; restricted access list; audit log specially flagged.</span></li>
+      <li><span class="pill p2">P2</span><b>Refugee / undocumented patient</b> with no national ID.</li>
+      <li><span class="pill p2">P2</span><b>Patient impersonation / fraud detection.</b><span class="scenario">Brother uses sister's NHIP card to access free care.</span><span class="resolution">Photo + signature on file; mismatch triggers manual verification at front desk.</span></li>
+      <li><span class="pill p1">P1</span><b>Deceased patient.</b><span class="resolution">Mark record deceased; block future appointment booking; preserve history; transfer family-link visibility per consent.</span></li>
+      <li><span class="pill p2">P2</span><b>Minor turning 18.</b> Parent loses default visibility; requires explicit re-grant.</li>
+    </ul>
+  </div>
+
+  <!-- B.2 Clinical edges -->
+  <div class="cat-card cc">
+    <div class="cat-title">B·2 · Clinical workflow edges</div>
+    <div class="cat-frame">Real medicine is full of "actually, no, wait" moments — refusals, mid-treatment changes, conflicts, polypharmacy, language barriers, mental-health emergencies.</div>
+    <ul class="item-list">
+      <li><span class="pill p1">P1</span><b>Doctor changes mind mid-prescription.</b><span class="resolution">Draft state until "save &amp; print"; full edit allowed pre-finalisation; post-finalisation requires amendment.</span></li>
+      <li><span class="pill p1">P1</span><b>Patient refuses treatment / test (informed refusal).</b><span class="resolution">Templated refusal note with patient signature; remains in record permanently.</span></li>
+      <li><span class="pill p1">P1</span><b>Polypharmacy alerts.</b><span class="scenario">68-year-old on 7 chronic meds — adding an 8th risks interaction cascade.</span><span class="resolution">Soft alert at 5+ active meds; hard alert on confirmed interaction.</span></li>
+      <li><span class="pill p1">P1</span><b>Drug shortage mid-treatment.</b><span class="resolution">Pharmacy flags out-of-stock; doctor notified; alternative suggested via drug-master.</span></li>
+      <li><span class="pill p1">P1</span><b>Patient leaves AMA (against medical advice).</b><span class="resolution">AMA form with explicit acknowledgement; flag in record.</span></li>
+      <li><span class="pill p1">P1</span><b>Language barrier — patient doesn't speak Nepali or English.</b><span class="resolution">Interpreter field, language preference flag, multilingual prescription print.</span></li>
+      <li><span class="pill p0">P0</span><b>Mental-health emergency / suicide-risk disclosure.</b><span class="resolution">Crisis-protocol alert in Doc App; auto-display referral options; sensitive-case access controls automatically activated.</span></li>
+      <li><span class="pill p1">P1</span><b>Domestic abuse disclosure.</b><span class="resolution">Confidential note; restricted-access flag; safe-discharge planning fields.</span></li>
+      <li><span class="pill p1">P1</span><b>Notifiable disease (TB, dengue, COVID-19).</b><span class="resolution">Auto-route to EDCD reporting queue; surveillance flag in record.</span></li>
+      <li><span class="pill p2">P2</span><b>Patient returns same day with new symptom.</b><span class="resolution">Same-day re-consultation flag; bills as separate or as continuation per clinic policy.</span></li>
+      <li><span class="pill p2">P2</span><b>Two doctors with conflicting opinions.</b><span class="resolution">Both notes preserved; primary-treating-doctor designation; visible conflict flag.</span></li>
+      <li><span class="pill p2">P2</span><b>Disability accommodations</b> in scheduling and waiting (extra time, wheelchair, sign language).</li>
+      <li><span class="pill p2">P2</span><b>Adverse drug event.</b><span class="resolution">ADE form with auto-link to prescribed drug; pharmacovigilance reporting trigger.</span></li>
+    </ul>
+  </div>
+
+  <!-- B.3 Billing edges -->
+  <div class="cat-card cc">
+    <div class="cat-title">B·3 · Billing &amp; payment edges</div>
+    <div class="cat-frame">Cash-clean transactions are the easy 60%. The other 40% is partial pay, splits, mistakes, fraud, free-care eligibility, and accounting reconciliation.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Patient can't pay full amount.</b><span class="scenario">Bill is NPR 4,200; patient has NPR 1,500. Common.</span><span class="resolution">Partial-payment flow with outstanding ledger; due-date capture; SMS reminder for balance.</span></li>
+      <li><span class="pill p0">P0</span><b>Wrong patient charged.</b><span class="resolution">Reversal flow with reason; original transaction preserved; new transaction audited.</span></li>
+      <li><span class="pill p1">P1</span><b>Bill split between insurer and patient.</b><span class="resolution">Co-pay calculation; two-line settlement; insurer balance tracked separately.</span></li>
+      <li><span class="pill p1">P1</span><b>Bipanna citizen / free-care eligibility.</b><span class="resolution">Free-care flag on patient profile; bill auto-zeros for eligible services; subsidy ledger maintained.</span></li>
+      <li><span class="pill p1">P1</span><b>Senior citizen / disability discount.</b><span class="resolution">Auto-applied per government rules; visible on receipt with statutory reference.</span></li>
+      <li><span class="pill p1">P1</span><b>Emergency-care-now-bill-later.</b><span class="resolution">Service first, deferred billing flag; balance becomes due on discharge or reconciliation.</span></li>
+      <li><span class="pill p1">P1</span><b>Patient paid twice (system error or human).</b><span class="resolution">Duplicate-payment detection; proactive refund to original payment method.</span></li>
+      <li><span class="pill p1">P1</span><b>Cash discrepancy at day-end.</b><span class="scenario">Counted cash NPR 12,400; system says NPR 12,800.</span><span class="resolution">Variance log; require reason and supervisor sign-off; pattern reporting to owner.</span></li>
+      <li><span class="pill p1">P1</span><b>Refund to wallet vs cash vs bank.</b><span class="resolution">Refund-method match to original payment method by default; deviation requires supervisor approval.</span></li>
+      <li><span class="pill p2">P2</span><b>Currency mix in single transaction</b> (cash NPR + INR + card).</li>
+      <li><span class="pill p2">P2</span><b>Payment-gateway settlement mismatch.</b><span class="resolution">Daily reconciliation report; settlement variance escalation.</span></li>
+      <li><span class="pill p2">P2</span><b>Suspicious payment patterns.</b><span class="scenario">Same staff issuing 8 discounts above threshold in one day.</span><span class="resolution">Anomaly detection on discount/refund volumes; owner alert.</span></li>
+    </ul>
+  </div>
+
+  <!-- B.4 Diagnostic edges -->
+  <div class="cat-card cc">
+    <div class="cat-title">B·4 · Diagnostic &amp; lab edges</div>
+    <div class="cat-frame">Labs are mechanical and physical. Things contaminate, get lost, break, or expire. The system has to handle each gracefully.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Sample mix-up — wrong patient's blood drawn.</b><span class="scenario">Two patients with similar names; tech misreads label.</span><span class="resolution">Two-factor verification at draw; barcode scan against active order; mismatch alarm.</span></li>
+      <li><span class="pill p0">P0</span><b>Sample contamination / haemolysis / clotting.</b><span class="resolution">Rejection workflow; auto-notify front desk for re-collection; no charge for repeat draw.</span></li>
+      <li><span class="pill p1">P1</span><b>Sample lost in transit (send-out).</b><span class="resolution">Status tracking with stale-status alerts; partner-lab escalation; patient notification with new ETA.</span></li>
+      <li><span class="pill p1">P1</span><b>Test result clearly wrong (delta-check trips).</b><span class="resolution">Hold release; alert tech for repeat; doctor sees "pending verification" state.</span></li>
+      <li><span class="pill p0">P0</span><b>Critical value but doctor unreachable.</b><span class="scenario">Potassium 6.8, life-threatening; ordering doctor on flight to Pokhara.</span><span class="resolution">Escalation chain — primary doctor → on-call doctor → senior physician → clinic owner. SMS, call, app push in parallel; acknowledgement required.</span></li>
+      <li><span class="pill p1">P1</span><b>Equipment malfunction mid-batch.</b><span class="resolution">Quarantine all results from affected period; QC re-run requirement; patient notification of delay.</span></li>
+      <li><span class="pill p1">P1</span><b>Reagent expired during run.</b><span class="resolution">Auto-quarantine results; re-run with fresh reagent; QC documentation for inspection.</span></li>
+      <li><span class="pill p1">P1</span><b>Power outage mid-test.</b><span class="resolution">Auto-save partial state; resume on power; inform tech which tests need re-run.</span></li>
+      <li><span class="pill p1">P1</span><b>Result available after patient has left.</b><span class="resolution">Asynchronous delivery via app + SMS + WhatsApp; patient need not return.</span></li>
+      <li><span class="pill p2">P2</span><b>Doctor wants add-on test on existing sample.</b><span class="resolution">Within-stability-window check per test; auto-enable add-on with billing reconciliation.</span></li>
+      <li><span class="pill p2">P2</span><b>Pathologist on leave during a critical case.</b><span class="resolution">On-call substitution roster; verification workflow re-routes automatically.</span></li>
+      <li><span class="pill p2">P2</span><b>Result amended after release.</b><span class="resolution">Original released report preserved; addendum issued; patient + doctor notified; original PDF marked superseded.</span></li>
+    </ul>
+  </div>
+
+  <!-- B.5 Privacy & legal edges -->
+  <div class="cat-card cc">
+    <div class="cat-title">B·5 · Privacy, legal &amp; access edges</div>
+    <div class="cat-frame">Records are subpoenaed, requested, demanded, snooped on, and lost. The system needs a legally defensible answer for each.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Court / police subpoena for records.</b><span class="resolution">Documented release-of-records workflow with legal authorisation capture; full audit trail; patient notified unless court-ordered confidentiality.</span></li>
+      <li><span class="pill p1">P1</span><b>Family member tries to access without authorisation.</b><span class="scenario">Estranged spouse calls front desk asking for last visit details.</span><span class="resolution">Default deny; consent-on-file required; verbal verification not sufficient.</span></li>
+      <li><span class="pill p1">P1</span><b>Insurance company audit.</b><span class="resolution">De-identified bulk export by case number; consent verified; access logged.</span></li>
+      <li><span class="pill p0">P0</span><b>Doctor leaves clinic — what happens to their patient relationships?</b><span class="resolution">Patient ownership transfers to clinic; doctor retains professional CME record; patients notified of doctor change.</span></li>
+      <li><span class="pill p0">P0</span><b>Clinic shuts down.</b><span class="resolution">Data preservation for legally-required retention period; patient export option; orderly handover to successor clinic if any.</span></li>
+      <li><span class="pill p0">P0</span><b>Cyberattack / ransomware.</b><span class="resolution">Documented IR plan; offline backups; breach notification per Privacy Act; restoration RTO defined.</span></li>
+      <li><span class="pill p1">P1</span><b>Data exfiltration by employee.</b><span class="resolution">Bulk-export rate limits; export audit logs; review queue for unusual patterns.</span></li>
+      <li><span class="pill p1">P1</span><b>Patient asks "what data do you have on me?"</b><span class="resolution">Self-service report in Patient App; full record export within 7 working days per Privacy Act.</span></li>
+      <li><span class="pill p1">P1</span><b>Patient asks for deletion.</b><span class="resolution">Deletion workflow with retention exceptions (legal, fiscal); confirmation; soft-delete with hard-delete after retention period.</span></li>
+      <li><span class="pill p2">P2</span><b>Minor reaches majority.</b><span class="resolution">Consent re-collection from young adult; parent visibility revoked unless re-granted.</span></li>
+      <li><span class="pill p2">P2</span><b>Cross-border data request</b> from foreign government for a foreign patient.</li>
+    </ul>
+  </div>
+
+  <!-- B.6 Operational / infrastructure edges -->
+  <div class="cat-card cc">
+    <div class="cat-title">B·6 · Operational &amp; infrastructure edges</div>
+    <div class="cat-frame">Power, internet, equipment, staff, weather, politics — the operating environment in Nepal is unstable in ways the spec must absorb.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Internet outage (extended).</b><span class="resolution">Offline mode (see A·11); local sync queue; reconcile on reconnect.</span></li>
+      <li><span class="pill p0">P0</span><b>Power outage.</b><span class="resolution">UPS recommendation in deployment guide; auto-save every action; recovery flow on restart.</span></li>
+      <li><span class="pill p0">P0</span><b>Server downtime / SaaS provider outage.</b><span class="resolution">Status page; degraded-mode operation; SLA credit; communication template.</span></li>
+      <li><span class="pill p1">P1</span><b>Backup failure (silent).</b><span class="resolution">Daily backup-verification job; immediate alert on failure; weekly restore-test.</span></li>
+      <li><span class="pill p1">P1</span><b>Software bug discovered in production.</b><span class="resolution">Hotfix process; canary deployment; communication to affected customers within 24h.</span></li>
+      <li><span class="pill p1">P1</span><b>Doctor sudden unavailability.</b><span class="resolution">Mass-reschedule with patient notification; redirect to colleague where appropriate.</span></li>
+      <li><span class="pill p1">P1</span><b>Staff leaves with knowledge.</b><span class="resolution">Documented runbooks; knowledge-base contributions tracked; named-staff access decommissioned within 24h.</span></li>
+      <li><span class="pill p1">P1</span><b>License expirations</b> — clinic license, doctor's NMC, drug license.<span class="resolution">Expiry tracker per credential; warning at 90/60/30 days.</span></li>
+      <li><span class="pill p2">P2</span><b>Earthquake / disaster.</b><span class="resolution">Disaster-recovery playbook; remote-hot-standby; mobile fallback; emergency-mode triage registration.</span></li>
+      <li><span class="pill p2">P2</span><b>Pandemic / surge.</b><span class="resolution">Bulk-flag infection-control protocol; surge-mode triage; isolation-room scheduling support.</span></li>
+      <li><span class="pill p2">P2</span><b>Festival / holiday closures.</b><span class="resolution">Calendar-aware scheduling; pre-festival appointment cap; recall-pause windows.</span></li>
+      <li><span class="pill p2">P2</span><b>Political bandh / curfew.</b><span class="resolution">Bulk reschedule by date range; SMS notification with rebooking link.</span></li>
+    </ul>
+  </div>
+
+  <!-- B.7 Customer lifecycle edges -->
+  <div class="cat-card cc">
+    <div class="cat-title">B·7 · Customer lifecycle edges</div>
+    <div class="cat-frame">SaaS customers don't all glide from sign-up to advocacy. Some go silent, some default, some sue, some want what's impossible.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Customer goes silent for 30 days.</b><span class="resolution">Health-score drop alert; CS outreach within 48h; usage diagnostic shared with customer.</span></li>
+      <li><span class="pill p1">P1</span><b>Customer threatens to leave.</b><span class="resolution">Escalation to senior CS; root-cause interview; written remediation plan; renewal-discount discretion.</span></li>
+      <li><span class="pill p1">P1</span><b>Customer churns.</b><span class="resolution">Exit-interview; data export within 14 days; full deletion within 90 days; lessons-learned to product roadmap.</span></li>
+      <li><span class="pill p1">P1</span><b>Customer defaults on payment.</b><span class="resolution">Grace period (15 days); read-only mode (next 15 days); export-only mode (next 60 days); deletion thereafter.</span></li>
+      <li><span class="pill p1">P1</span><b>Customer's clinic shuts down.</b><span class="resolution">Documented closure flow; data handover to successor or patient export; legal retention preserved.</span></li>
+      <li><span class="pill p1">P1</span><b>Customer outgrows the product (chain expansion).</b><span class="resolution">Migration path to enterprise tier; feature gap roadmap; transparent timeline.</span></li>
+      <li><span class="pill p2">P2</span><b>Customer wants white-label / reseller.</b><span class="resolution">Legal agreement template; revenue split; brand isolation in product.</span></li>
+      <li><span class="pill p2">P2</span><b>Customer requests feature that conflicts with another customer's request.</b><span class="resolution">Public roadmap; transparent prioritisation criteria; configurability where the cost is justified.</span></li>
+      <li><span class="pill p2">P2</span><b>Customer is referred fraud.</b><span class="resolution">Suspension flow; investigation; refund/clawback if needed.</span></li>
+      <li><span class="pill p2">P2</span><b>Customer sues.</b><span class="resolution">Legal escalation; communication freeze; preservation hold on data.</span></li>
+    </ul>
+  </div>
+
+  <!-- B.8 System integrity & concurrency -->
+  <div class="cat-card cc">
+    <div class="cat-title">B·8 · System integrity, concurrency &amp; format edges</div>
+    <div class="cat-frame">Real software collides with itself. Two users edit the same record. Devanagari encodes weird. Dates flip across BS-AD. Time zones are awkward.</div>
+    <ul class="item-list">
+      <li><span class="pill p0">P0</span><b>Two users edit same record simultaneously.</b><span class="scenario">Doctor updates prescription; nurse updates vitals at the same second; one overwrites the other.</span><span class="resolution">Optimistic locking with version numbers; conflict UI for human resolution; field-level merge where possible.</span></li>
+      <li><span class="pill p1">P1</span><b>Time zone correctness.</b> Nepal is UTC+5:45 — odd offset. India sometimes confused.<span class="resolution">All timestamps stored UTC; display localised; explicit zone tag on exports.</span></li>
+      <li><span class="pill p1">P1</span><b>BS / AD calendar sync issues.</b><span class="scenario">Patient born "2042 BS" — needs accurate AD conversion across leap years.</span><span class="resolution">Authoritative BS-AD conversion library; both displayed everywhere a date matters.</span></li>
+      <li><span class="pill p1">P1</span><b>Devanagari encoding issues.</b> Mixed scripts in patient names, copy-paste from Word.<span class="resolution">UTF-8 throughout; normalisation NFC; render test for top-200 Nepali names.</span></li>
+      <li><span class="pill p1">P1</span><b>Long names truncated on receipts.</b><span class="resolution">Adaptive font-size; second-line wrap; full-name preserved in record.</span></li>
+      <li><span class="pill p1">P1</span><b>Number formatting (lakhs vs millions; comma placement).</b><span class="resolution">Locale-aware formatting; user preference setting.</span></li>
+      <li><span class="pill p1">P1</span><b>DOB unknown — only year known.</b><span class="scenario">Common for elderly Nepali patients.</span><span class="resolution">Accept partial dates; flag in record; age-calculation tolerates uncertainty.</span></li>
+      <li><span class="pill p2">P2</span><b>Database migration / version upgrades.</b><span class="resolution">Zero-downtime migration patterns; backwards-compatible schema changes; rollback plan.</span></li>
+      <li><span class="pill p2">P2</span><b>Clock drift on local devices.</b><span class="resolution">Server time as authoritative; client warns on significant drift.</span></li>
+      <li><span class="pill p2">P2</span><b>Decimal precision in lab values.</b><span class="resolution">Per-test precision config; display rules; rounding policy documented.</span></li>
+    </ul>
+  </div>
+
+  <!-- ============================================================
+       SECTION C: USER JOURNEYS
+       ============================================================ -->
+  <div class="section-head" id="journeys">
+    <span class="num">C</span>
+    <h2>User journeys</h2>
+    <p class="desc">Different from user flows. Flows show <em>steps</em>; journeys show <em>experience</em> — what the user thinks, feels, fears, and remembers across a longer arc. Three journeys covering different time horizons and personas.</p>
+  </div>
+
+  <div class="legend-row">
+    <span class="emo emo-pos">Confident</span>
+    <span class="emo emo-neu">Neutral</span>
+    <span class="emo emo-anx">Anxious</span>
+    <span class="emo emo-neg">Frustrated</span>
+  </div>
+
+  <!-- Journey 1 -->
+  <div class="journey">
+    <div class="journey-meta">
+      <span><b>Persona:</b> Patient · acute illness</span>
+      <span><b>Arc:</b> Single illness episode</span>
+      <span><b>Time:</b> 4–6 hours</span>
+    </div>
+    <div class="journey-title">Journey 1 · Sushma, 34, has a fever that won't break</div>
+    <div class="journey-sub">Office worker in Lalitpur. Three days of fever. Tries to manage it herself, then decides to see a doctor.</div>
+
+    <div class="stage-grid">
+      <div class="stage-row">
+        <div class="stage-name">Realising</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Day three of fever. Paracetamol isn't holding. Asks her sister-in-law on WhatsApp.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"What if it's dengue? My colleague had dengue last month."</p><span class="emo emo-anx">Anxious</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Discovery is invisible to the app. Most patients arrive via Google / WhatsApp / Facebook. SEO and clinic Facebook integration matter more than the app itself.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Booking</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Sister-in-law sends clinic FB link. Taps "Book," OTP, picks 3pm slot with the GP.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"Good, no phone call. I hate explaining symptoms to a receptionist."</p><span class="emo emo-pos">Reassured</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Pre-consultation symptom intake (Gap A·2). Structured fever questionnaire surfaces in Doc App before she arrives. Doctor knows her case before she sits down.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Arriving</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Reaches clinic, scans QR at entrance. Sees "Token 7, 2 ahead of you." Sits.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"Two ahead — about 20 minutes? Manageable. I can finish this email."</p><span class="emo emo-pos">In control</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Visible reasons for queue jumps (Gap A·2 triage). "Patient ahead of you was an emergency" preserves trust. Silence breeds frustration.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">In consult</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Nurse takes vitals. Doctor calls her in with pre-filled symptoms on screen, asks targeted questions, examines, orders dengue NS1, CBC, urine R/M.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"He didn't make me explain everything from scratch. That's a relief — I don't have the energy."</p><span class="emo emo-pos">Relieved</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Voice-recorded ambient consult (Insight 04). Doctor maintains eye contact; system writes the note. <strong>Highest-impact UX moment in the product.</strong></div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Tests &amp; pay</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Bills already in cart. Pays NPR 1,640 via FonePay QR. Lab takes blood; NS1 in 1 hour, others by evening.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"That was fast. But what if it's dengue? Should I go home or wait?"</p><span class="emo emo-anx">Anxious</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Plain-language bill descriptions. <em>"Complete blood count — checks for infection markers"</em> beats <em>"CBC LAB-C001."</em></div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Results</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Home. WhatsApp ping in 70 minutes — NS1 negative. Three hours later — CBC normal, mild dehydration. Doctor's note: "Likely viral. Hydrate. Paracetamol PRN. Return if fever &gt;102 for 24h or any bleeding."</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"Oh thank god. And he gave me a clear plan."</p><span class="emo emo-pos">Trust built</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Doctor's plain-language note alongside the formal report. Two extra minutes of doctor time at result-release earns ten years of patient loyalty.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">After</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Recovers in 4 days. Three months later, clinic sends Dashain greeting + flu-vax reminder. She books.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"They actually remember me. Nice."</p><span class="emo emo-pos">Loyal</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Recall &amp; retention loops are where one-time patients become 5-year patients. The difference between a $40 and $400 LTV.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Journey 2 -->
+  <div class="journey">
+    <div class="journey-meta">
+      <span><b>Persona:</b> Patient · chronic disease</span>
+      <span><b>Arc:</b> First diagnosis through 12 months of management</span>
+      <span><b>Time:</b> 12 months · 6–8 visits</span>
+    </div>
+    <div class="journey-title">Journey 2 · Krishna, 56, newly diagnosed Type 2 diabetic</div>
+    <div class="journey-sub">Retired civil servant in Bharatpur. Two adult children abroad sending remittances. Wife is his primary support.</div>
+
+    <div class="stage-grid">
+      <div class="stage-row">
+        <div class="stage-name">Diagnosis</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>FBS 218; HbA1c 9.2%. Doctor explains, starts metformin, schedules 6-week follow-up, recommends diet counselling.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"Diabetes? Like my brother had? He had foot problems."</p><span class="emo emo-neg">Frightened</span> <span class="emo emo-anx">Overwhelmed</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Diagnosis-specific patient education in Nepali, auto-shared via WhatsApp. Reduces cognitive load when the patient is too anxious to absorb verbal explanation.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Month 1</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Takes metformin daily. Buys glucometer. Wife logs fasting sugar in a notebook. Forgets dose on busy days.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"It's not so bad. I feel fine. Maybe the doctor was alarmist."</p><span class="emo emo-neu">Complacent</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Medication reminders (Gap A·1 P1). Without these, adherence drops by month three.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Month 1.5</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>System auto-recall. Books slot. Lab does HbA1c first; result 8.1% by the time he sees doctor.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"Down from 9.2 to 8.1 in six weeks. The medicine is working."</p><span class="emo emo-pos">Motivated</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Recall loop is the spine of chronic care. <strong>The single biggest retention engine in the product.</strong></div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Month 4</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Cold while visiting daughter in Pokhara. Different clinic does chest X-ray. Brings X-ray back to Bharatpur.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"Should I tell my regular doctor? Will he be annoyed?"</p><span class="emo emo-anx">Conflicted</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>External report ingestion (Flow 6). He uploads the X-ray himself; clinic reviews and adds to record. Removes the social friction of "telling on yourself."</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Month 6</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>HbA1c 7.4%. Doctor opens trend chart — sees 9.2 → 8.1 → 7.4 plus the external X-ray inline. Adjusts plan, mentions retinopathy screening due in 6 months.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"He has my whole picture. I don't need to remember everything."</p><span class="emo emo-pos">Trust deepening</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Trend graphs that include external data points make the patient feel <em>known</em>. This is where SaaS becomes irreplaceable.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Month 12</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>HbA1c 6.9%. Annual eye check via referral. Recommends his wife also screen (family history).</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"This clinic helped me. I'll bring my wife here too."</p><span class="emo emo-pos">Advocate</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Family linking (Gap A·1). One advocate brings 2–4 family members. Patient referral is the lowest-CAC channel for any clinic.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Journey 3 -->
+  <div class="journey">
+    <div class="journey-meta">
+      <span><b>Persona:</b> Clinic owner · customer</span>
+      <span><b>Arc:</b> Discovery → trial → onboarding → habit → expansion → advocacy</span>
+      <span><b>Time:</b> 18 months</span>
+    </div>
+    <div class="journey-title">Journey 3 · Dr. Anjana, GP, opening her second branch</div>
+    <div class="journey-sub">Single-doctor GP clinic in New Baneshwar with one front-desk staff. Paper-and-Excel for 4 years. Now opening a second branch with two associate doctors.</div>
+
+    <div class="stage-grid">
+      <div class="stage-row">
+        <div class="stage-name">Awareness</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>NMA conference. 10-min sponsor pitch. Takes a flyer. Doesn't act for 3 months.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"Should digitise eventually. But Excel works."</p><span class="emo emo-neu">Indifferent</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>NMA / NDA partnership presence is the cheapest top-of-funnel. Don't underestimate analog channels.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Trigger</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Decides to open second branch. Realises she can't run two paper systems. Searches "clinic management Nepal," compares Okhati, Midas, this product.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"I need to pick one. But what if I pick wrong?"</p><span class="emo emo-anx">Pressured</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>SEO + comparison content — "Okhati vs &lt;product&gt; honest comparison" ranks; brings buyers in evaluation mode.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Trial</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>30-day trial. Founder does 90-min video demo. Imports 6 months of patient records from Excel.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"They migrated my Excel for me. I expected to do it myself."</p><span class="emo emo-pos">Impressed</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Done-for-you migration (Gap A·13) is the highest-leverage CS investment. The customer cannot build trust without it.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Go-live</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>First day live. Front-desk staff struggles. Two billing errors. CS person on WhatsApp answering in real time.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"Harder than I thought. But the support is responsive — I'll give it another week."</p><span class="emo emo-anx">Stressed</span> <span class="emo emo-neu">Tentative</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>First 7 days = make-or-break. Dedicated CS hand-holding here is the single most-leveraged churn-prevention investment. <strong>This is where most Nepali SaaS die.</strong></div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Habit</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Day 30. Front desk fluent. Anjana checks daily collection dashboard every evening. Uses recall feature.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"I see things I never saw before. Last month 23% of revenue from diabetics — I had no idea."</p><span class="emo emo-pos">Confident</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Owner dashboard is the stickiness moment. Once an owner sees data they couldn't see before, they will not switch back.</div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Expansion</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Opens second branch. Two associate doctors. Activates branch features. Pays plan upgrade.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"I'm running two locations from my phone. Wasn't possible last year."</p><span class="emo emo-pos">Empowered</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Multi-clinic features (Gap A·12) turn a $400/year customer into a $2,000/year customer. <strong>Where ARPU expansion lives.</strong></div>
+        </div>
+      </div>
+      <div class="stage-row">
+        <div class="stage-name">Advocacy</div>
+        <div class="stage-content">
+          <div class="stage-block">
+            <div><div class="lab">Action</div><p>Next NMA conference, she's at the SaaS booth as a customer reference. Refers two GP friends.</p></div>
+            <div><div class="lab">Thoughts &amp; feelings</div><p class="quote">"I'm the kind of doctor who runs a modern practice now. Part of my professional identity."</p><span class="emo emo-pos">Identity-aligned</span></div>
+          </div>
+          <div class="opp"><div class="lab">Opportunity</div>Customer-as-channel is the lowest-CAC growth lever in a relationship-driven market.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SECTION D: SERVICE BLUEPRINTS
+       ============================================================ -->
+  <div class="section-head" id="blueprints">
+    <span class="num">D</span>
+    <h2>Service blueprints</h2>
+    <p class="desc">A service blueprint maps what's <em>visible</em> to the customer, what's <em>frontstage</em>, what's <em>backstage</em>, and what <em>support systems</em> sit underneath. Three blueprints follow — one for each journey above. Each is the operational complement to its journey.</p>
+  </div>
+
+  <div class="callout">
+    <div class="clab">How to read a blueprint</div>
+    Stages run left to right (time). Layers run top to bottom — customer at the top, deeper system layers below. The three black bars are the <em>line of interaction</em> (above, customer engaged), <em>line of visibility</em> (above, customer-visible), and <em>line of internal interaction</em> (above, staff; below, infrastructure). Where the journey says "she felt anxious," the blueprint shows the eight backstage processes that resolved the cause.
+  </div>
+
+  <!-- BLUEPRINT 1: Acute illness -->
+  <h3>Blueprint 1 · Acute illness episode (Sushma, Journey 1)</h3>
+  <div class="bp-context">
+    <b>Context:</b> A 4-hour episode that determines whether Sushma becomes a 1-visit or 10-year patient. The frontstage is graceful; the backstage is busy.
+  </div>
+  <div class="blueprint-wrap">
+    <table class="bp-table">
+      <thead>
+        <tr>
+          <th>Layer ↓ &nbsp;&nbsp; Stage →</th>
+          <th>1 · Discovery</th>
+          <th>2 · Booking</th>
+          <th>3 · Arrival</th>
+          <th>4 · Vitals &amp; Consult</th>
+          <th>5 · Tests &amp; Pay</th>
+          <th>6 · Result</th>
+          <th>7 · Follow-up</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="bp-customer"><th>Customer actions <span class="layer-sub">What patient does</span></th>
+          <td>Searches Google · asks family · sees Facebook ad</td>
+          <td>Taps booking link, OTP, picks slot, fills symptoms</td>
+          <td>Arrives, scans QR, sits, watches token screen</td>
+          <td>Vitals taken; sees doctor; describes problem</td>
+          <td>Pays bill, gives blood/urine sample, leaves</td>
+          <td>Receives ping, opens report</td>
+          <td>Re-engages on recall</td>
+        </tr>
+        <tr class="bp-touchpoint"><th>Touchpoints <span class="layer-sub">Channels &amp; artifacts</span></th>
+          <td>Google · FB page · WhatsApp · clinic website</td>
+          <td>Patient App · OTP SMS · confirmation SMS</td>
+          <td>Entrance QR · token display · live queue</td>
+          <td>Vital station · doctor's tablet · paper rx</td>
+          <td>Billing screen · printed receipt · FonePay QR</td>
+          <td>Push · WhatsApp · Patient App report</td>
+          <td>Recall SMS · WhatsApp greeting · vaccine reminder</td>
+        </tr>
+        <tr><td colspan="8" class="bp-line">Line of interaction</td></tr>
+        <tr class="bp-frontstage"><th>Frontstage <span class="layer-sub">Visible service</span></th>
+          <td>FB posts · doctor profile · review responses</td>
+          <td>Patient App responds · system holds slot · sends confirmation</td>
+          <td>Front Desk marks arrived · token assigned · queue updates</td>
+          <td>Nurse takes vitals · doctor consults via Doc App · prescription generated</td>
+          <td>Front Desk runs cart · accepts payment · prints receipt · phlebotomist draws sample</td>
+          <td>Notification system pings patient · Patient App renders PDF</td>
+          <td>Recall scheduler triggers · CS responds to queries</td>
+        </tr>
+        <tr><td colspan="8" class="bp-line">Line of visibility</td></tr>
+        <tr class="bp-backstage"><th>Backstage <span class="layer-sub">Invisible work</span></th>
+          <td>SEO ops · social media · review monitoring</td>
+          <td>Slot inventory · double-book prevention · doctor-leave reconciliation · symptom routing</td>
+          <td>Triage logic · queue reordering · token assignment</td>
+          <td>Allergy / interaction checks · template loading · audit log · QR generation</td>
+          <td>Order pushed to Diagnostic · sample-label printer · payment settlement · ledger entry</td>
+          <td>Tech enters values · pathologist verifies · abnormal flagging · critical alert · PDF gen</td>
+          <td>Recall rule engine · churn-risk scoring · clinical-condition tagging · CRM workflow</td>
+        </tr>
+        <tr><td colspan="8" class="bp-line">Line of internal interaction</td></tr>
+        <tr class="bp-support"><th>Support <span class="layer-sub">Systems &amp; infra</span></th>
+          <td>Cloud CMS · Google APIs · FB Graph · review aggregator</td>
+          <td>Identity service · scheduling DB · SMS gateway · WhatsApp Business</td>
+          <td>QR check-in · queue state machine · pub-sub · POS</td>
+          <td>EMR core · drug master · ICD-10 · NMC verify · NHIP API · audit log</td>
+          <td>Billing engine · eSewa/Khalti/FonePay · ConnectIPS · Tally export · IRD invoice</td>
+          <td>Analyzer interfaces · DICOM PACS · reference range DB · digital signature · PDF · notification</td>
+          <td>Recall scheduler · CRM · WhatsApp Business · disease registry · health-scoring</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="scroll-hint">Scroll horizontally to see all stages →</p>
+
+  <!-- BLUEPRINT 2: Chronic care -->
+  <h3>Blueprint 2 · Chronic care recall loop (Krishna, Journey 2)</h3>
+  <div class="bp-context">
+    <b>Context:</b> A 12-month relationship sustained by automation. The customer's experience is "the clinic remembers me;" the backstage is a clinical-tagging engine plus a recall scheduler plus an external-data ingestion pipeline.
+  </div>
+  <div class="blueprint-wrap">
+    <table class="bp-table">
+      <thead>
+        <tr>
+          <th>Layer ↓ &nbsp;&nbsp; Stage →</th>
+          <th>1 · Diagnosis</th>
+          <th>2 · Adherence (M1)</th>
+          <th>3 · First recall (M1.5)</th>
+          <th>4 · External event (M4)</th>
+          <th>5 · Steady state (M6)</th>
+          <th>6 · Annual review (M12)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="bp-customer"><th>Customer actions</th>
+          <td>Receives diagnosis; absorbs information</td>
+          <td>Takes meds; logs sugar; forgets sometimes</td>
+          <td>Receives recall; books; comes in</td>
+          <td>Visits other clinic abroad; gets X-ray; brings back</td>
+          <td>Routine visit; sees own progress</td>
+          <td>Annual labs; eye check; brings wife in</td>
+        </tr>
+        <tr class="bp-touchpoint"><th>Touchpoints</th>
+          <td>Verbal explanation · Patient App education · WhatsApp drug guide</td>
+          <td>Med reminders push · glucometer · paper notebook · Patient App vitals log</td>
+          <td>Recall SMS · booking link · Patient App · clinic visit</td>
+          <td>External clinic receipt · X-ray PDF · Patient App upload</td>
+          <td>Patient App trend chart · doctor's tablet · WhatsApp follow-up</td>
+          <td>Family-link invite · referral letter · vaccine schedule</td>
+        </tr>
+        <tr><td colspan="7" class="bp-line">Line of interaction</td></tr>
+        <tr class="bp-frontstage"><th>Frontstage</th>
+          <td>Doctor explains; CS shares education; pharmacy dispenses with instructions</td>
+          <td>App reminders fire; patient logs in app</td>
+          <td>Recall SMS; booking flow; Front Desk arrival; lab pre-order; doctor visit</td>
+          <td>Patient uploads X-ray; clinic reviewer tags it; Doc App shows external badge</td>
+          <td>Lab; doctor with full trend; updated plan</td>
+          <td>Lab; doctor; referral generation; family registration prompt</td>
+        </tr>
+        <tr><td colspan="7" class="bp-line">Line of visibility</td></tr>
+        <tr class="bp-backstage"><th>Backstage</th>
+          <td>Diagnosis tagging engine assigns "Type 2 DM"; education content selection; care plan template</td>
+          <td>Reminder scheduler · adherence-risk model · churn-score updates</td>
+          <td>Recall rule engine fires (HbA1c last &gt;90 days); pre-order logic; lab queue routing</td>
+          <td>External report inbox · reviewer queue · key-value extraction; trend graph merge with external marker</td>
+          <td>Trend chart computation; care-plan adherence check; medication-review prompt</td>
+          <td>Annual checklist (eye, foot, kidney); referral letter generation; family-link suggestion engine</td>
+        </tr>
+        <tr><td colspan="7" class="bp-line">Line of internal interaction</td></tr>
+        <tr class="bp-support"><th>Support</th>
+          <td>EMR · ICD-10 service · education content CMS · drug master</td>
+          <td>Notification scheduler · adherence ML model · push gateway</td>
+          <td>Recall rule engine · scheduling DB · lab queue service · billing</td>
+          <td>External upload service · OCR (Wave 4) · trend-graph merge service · audit log</td>
+          <td>Trend computation service · care-plan engine · medication-review service</td>
+          <td>Annual-protocol checklist engine · referral-letter generator · family-link service</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="scroll-hint">Scroll horizontally to see all stages →</p>
+
+  <!-- BLUEPRINT 3: Onboarding -->
+  <h3>Blueprint 3 · Customer onboarding (Dr. Anjana, Journey 3, stages Trial → Habit)</h3>
+  <div class="bp-context">
+    <b>Context:</b> The most underrated blueprint in the whole document. <em>This is where most Nepali SaaS die.</em> The customer's experience is "I'm being walked through this carefully;" the backstage is a high-touch human-led migration plus a churn-risk model plus a CS ticket queue.
+  </div>
+  <div class="blueprint-wrap">
+    <table class="bp-table">
+      <thead>
+        <tr>
+          <th>Layer ↓ &nbsp;&nbsp; Stage →</th>
+          <th>1 · Sign-up</th>
+          <th>2 · Migration</th>
+          <th>3 · Training</th>
+          <th>4 · Day 1 live</th>
+          <th>5 · Days 2–14</th>
+          <th>6 · Day 30+ habit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="bp-customer"><th>Customer actions</th>
+          <td>Compares vendors; books demo; signs up for trial</td>
+          <td>Hands over Excel / paper register; reviews mapped data</td>
+          <td>Attends 2-hour training; staff watches videos in Nepali</td>
+          <td>First real patients; staff stumbles; calls support</td>
+          <td>Daily use; occasional questions; minor errors</td>
+          <td>Daily check of dashboard; uses recall; refers a colleague</td>
+        </tr>
+        <tr class="bp-touchpoint"><th>Touchpoints</th>
+          <td>Website · sales call · trial sign-up · welcome email</td>
+          <td>WhatsApp · screen-share · data-validation report · sign-off form</td>
+          <td>Live Zoom · recorded video library · printed quick-reference</td>
+          <td>WhatsApp helpline · in-app chat · phone call · CS WhatsApp group</td>
+          <td>In-app help · knowledge base · ticket portal · weekly check-in</td>
+          <td>Owner dashboard · NPS prompt · referral nudge · QBR (if larger)</td>
+        </tr>
+        <tr><td colspan="7" class="bp-line">Line of interaction</td></tr>
+        <tr class="bp-frontstage"><th>Frontstage</th>
+          <td>SDR / AE responds; demo delivered; trial provisioned</td>
+          <td>CS engineer maps Excel columns; runs migration; reviews with customer</td>
+          <td>CS trainer delivers session; recorded videos provisioned; printables shipped</td>
+          <td>CS responds to every WhatsApp within 5 minutes; debugs live errors</td>
+          <td>CS responds within 1 hour during business hours; ticket queue managed</td>
+          <td>CSM does monthly check-in; owner-dashboard tour; expansion conversation</td>
+        </tr>
+        <tr><td colspan="7" class="bp-line">Line of visibility</td></tr>
+        <tr class="bp-backstage"><th>Backstage</th>
+          <td>CRM lead routing; trial provisioning automation; welcome-sequence trigger</td>
+          <td>Migration tooling; data-quality validation; Excel-to-schema mapper; sign-off audit</td>
+          <td>LMS content management; Nepali video production; print fulfilment</td>
+          <td>Live error monitoring; on-call CS rota; knowledge-base authoring as new issues arise</td>
+          <td>Health scoring (active staff %, billing volume, ticket count); churn-risk model; daily standup on at-risk accounts</td>
+          <td>Account growth scoring; expansion-readiness model; referral-incentive automation</td>
+        </tr>
+        <tr><td colspan="7" class="bp-line">Line of internal interaction</td></tr>
+        <tr class="bp-support"><th>Support</th>
+          <td>CRM (HubSpot/Salesforce) · billing engine · email automation · Calendly</td>
+          <td>Migration scripts · validation engine · data-mapping UI · audit log</td>
+          <td>LMS · video CDN · print fulfilment vendor · Nepali translation pipeline</td>
+          <td>Real-time monitoring · paging · WhatsApp Business · phone IVR · Sentry/error tracking</td>
+          <td>Ticket system · KB CMS · health-score service · churn-risk ML · alerting</td>
+          <td>BI dashboard · expansion-readiness model · referral-attribution · NPS tooling</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="scroll-hint">Scroll horizontally to see all stages →</p>
+
+  <div class="callout" style="border-left-color:var(--accent-2);">
+    <div class="clab" style="color:var(--accent-2);">Why three blueprints, not just one</div>
+    The acute episode (Blueprint 1) is the product's <em>most-frequent</em> service. The chronic-care loop (Blueprint 2) is the product's <em>most-valuable</em> service — it's where LTV expands. The onboarding flow (Blueprint 3) is the product's <em>most-fragile</em> service — it's where customers die. <strong>Each is a different kind of operational complexity, and each has to be designed deliberately.</strong>
+  </div>
+
+  <!-- ============================================================
+       SECTION E: DESIGN PRINCIPLES
+       ============================================================ -->
+  <div class="section-head" id="principles">
+    <span class="num">E</span>
+    <h2>Design principles</h2>
+    <p class="desc">When you can't decide between two ways of building something, return to these. They're the synthesis of every gap, corner case, and journey above.</p>
+  </div>
+
+  <div class="principles-grid">
+    <div class="principle">
+      <div class="principle-num">1</div>
+      <div class="principle-title">Offline is a first-class state, not a fallback.</div>
+      <div class="principle-body">If a feature only works online, it doesn't work in Nepal. <em>Every</em> Front Desk and Doc App action must work offline and reconcile cleanly. The cloud is for sync, not for prerequisite.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">2</div>
+      <div class="principle-title">Trust beats features.</div>
+      <div class="principle-body">A clinic owner switching to a new system is making a trust-bet. Audit logs, granular permissions, transparent error messages, and visible CS responsiveness build trust. <em>Five extra features beat by one extra unexplained outage.</em></div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">3</div>
+      <div class="principle-title">Clinical safety before clinical convenience.</div>
+      <div class="principle-body">Allergy alerts. Drug interactions. Critical-value escalation. Sample-mix-up prevention. Triage. <em>Build these before you build a beautifully-styled prescription printer.</em> The order you build features in encodes your priorities.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">4</div>
+      <div class="principle-title">Localise hard, not soft.</div>
+      <div class="principle-body">Nepali UI is necessary; not sufficient. BS calendar, NPR currency, NMC numbers, FonePay, Tally export, IRD invoice format, MoHP HMIS reporting — these are the <em>hard</em> localisation. Skip them and you've built an Indian product.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">5</div>
+      <div class="principle-title">Every patient interaction must feel remembered.</div>
+      <div class="principle-body">Trend graphs that include external data. Pre-filled symptom forms. Recall messages timed to the patient's actual condition. <em>The one thing a paper system cannot do — and the one thing the product must do consistently.</em></div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">6</div>
+      <div class="principle-title">Backstage exists to make frontstage graceful.</div>
+      <div class="principle-body">A patient should never see "queue calculation failed." Every backstage failure has a frontstage degraded-mode behaviour. Service-blueprint failures must have rehearsed responses, not spontaneous panic.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">7</div>
+      <div class="principle-title">First seven days post-go-live is the product.</div>
+      <div class="principle-body">The features matter; the onboarding matters more. Done-for-you Excel migration, Nepali training videos, real-time WhatsApp support — these are not "customer success extras," they are part of the product itself.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">8</div>
+      <div class="principle-title">Let customers leave cleanly.</div>
+      <div class="principle-body">A churning customer is a referral risk. Full data export, dignified deletion, no last-minute hassles. <em>The grace with which you let people leave determines what they tell others about you.</em></div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">9</div>
+      <div class="principle-title">Design for shared phones, shared mobiles, and family-as-unit.</div>
+      <div class="principle-body">The Western "one user, one device, one account" assumption fails immediately. Family-linked profiles, multi-patient OTP disambiguation, and primary-contact distinct from patient must be P0 — not patched in later.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">10</div>
+      <div class="principle-title">Boring infrastructure is the moat.</div>
+      <div class="principle-body">Tally export. Thermal-printer support. UPS-friendly auto-save. eSewa reconciliation. None of these are pitch-deck features. <em>They are the difference between a product that ships and a product that survives.</em></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SECTION F: P0 MASTER CHECKLIST
+       ============================================================ -->
+  <div class="section-head" id="p0-checklist">
+    <span class="num">F</span>
+    <h2>P0 master checklist</h2>
+    <p class="desc">Every <span class="pill p0">P0</span> item across every section, on one page. <strong>If you cannot check every box on this list, you are not ready for customer one.</strong> Sorted by category for engineering planning.</p>
+  </div>
+
+  <table class="p0-table">
+    <thead>
+      <tr><th style="width:38%">Item</th><th style="width:38%">Specifically must do</th><th>Source</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="item-name">Offline mode</span><div class="scen">Internet drops; clinic must keep operating.</div></td><td>CRDT-based local store; sync on reconnect; conflict resolution UI.</td><td class="src-ref">A·11 · B·6</td></tr>
+      <tr><td><span class="item-name">Power-outage resilience</span><div class="scen">UPS expires mid-day; system reboots.</div></td><td>Auto-save every action; crash-safe recovery on restart.</td><td class="src-ref">A·11 · B·6</td></tr>
+      <tr><td><span class="item-name">Triage / priority queue</span><div class="scen">Emergency arrives; routine queue must yield.</div></td><td>Priority levels with visible reasons to other patients.</td><td class="src-ref">A·2</td></tr>
+      <tr><td><span class="item-name">Nurse / vitals-tech step</span><div class="scen">Vitals taken before doctor sees patient.</div></td><td>Separate vital-station role with handoff to Doc App.</td><td class="src-ref">A·2</td></tr>
+      <tr><td><span class="item-name">Duplicate-patient detection</span><div class="scen">Same patient registers under three names.</div></td><td>Soundex + Levenshtein on name + DOB; soft-warning flag.</td><td class="src-ref">A·1 · B·1</td></tr>
+      <tr><td><span class="item-name">Patient with no mobile</span><div class="scen">Elderly mother, daughter's phone is logged.</div></td><td>Primary-contact distinct from patient; update prompt on change.</td><td class="src-ref">B·1</td></tr>
+      <tr><td><span class="item-name">Patient name change</span><div class="scen">Marriage; patient asks for old documents.</div></td><td>Name history with effective dates; receipts show name as-of.</td><td class="src-ref">B·1</td></tr>
+      <tr><td><span class="item-name">Granular permissions</span><div class="scen">Front-desk staff applies a 50% discount; owner can't audit.</div></td><td>Discount limits per role; refund auth threshold; deletion rights; owner-only financials.</td><td class="src-ref">A·7</td></tr>
+      <tr><td><span class="item-name">2FA for staff login</span><div class="scen">Owner password is "12345" and on a sticky note.</div></td><td>OTP-based 2FA at minimum for owner/admin.</td><td class="src-ref">A·7</td></tr>
+      <tr><td><span class="item-name">Patient consent capture</span><div class="scen">Privacy Act 2018 obligation.</div></td><td>Versioned consent capture at registration, telemed, and on policy change.</td><td class="src-ref">A·8</td></tr>
+      <tr><td><span class="item-name">Tally Prime export</span><div class="scen">Owner's accountant lives in Tally.</div></td><td>Daily / monthly export in Tally-compatible XML.</td><td class="src-ref">A·9 · Insight 5</td></tr>
+      <tr><td><span class="item-name">VAT-exempt vs taxable split</span><div class="scen">IRD audits the receipt format.</div></td><td>Service-level VAT classification; itemised receipt; IRD-compliant.</td><td class="src-ref">A·5</td></tr>
+      <tr><td><span class="item-name">Sign-up &amp; trial flow</span><div class="scen">First-time customer arrives at the website.</div></td><td>Self-serve trial provisioning; onboarding email sequence; trial-to-paid path.</td><td class="src-ref">A·13</td></tr>
+      <tr><td><span class="item-name">Done-for-you data migration</span><div class="scen">Customer has 6 months of Excel; expects to do migration herself; won't.</div></td><td>CS-led migration with validation report and sign-off.</td><td class="src-ref">A·13 · Insight 2</td></tr>
+      <tr><td><span class="item-name">Training program in Nepali</span><div class="scen">Front-desk staff needs to learn the system.</div></td><td>2-hour live + recorded videos in Nepali; printed quick-reference.</td><td class="src-ref">A·13</td></tr>
+      <tr><td><span class="item-name">Pricing tiers</span><div class="scen">Solo clinic vs multi-doctor pricing.</div></td><td>Defined plan ladder; per-clinic vs per-user; published.</td><td class="src-ref">A·14</td></tr>
+      <tr><td><span class="item-name">Subscription billing engine</span><div class="scen">Auto-renewal each month.</div></td><td>Auto-debit via eSewa/Khalti or bank standing order; failure-handling.</td><td class="src-ref">A·14</td></tr>
+      <tr><td><span class="item-name">Prescription-to-pharmacy hand-off</span><div class="scen">Doctor prescribes; pharmacy needs to know.</div></td><td>Configurable: in-house auto-route, external print, or patient choice.</td><td class="src-ref">A·3</td></tr>
+      <tr><td><span class="item-name">Patient ID verification at sample collection</span><div class="scen">Two same-named patients; wrong blood drawn.</div></td><td>Two-factor verification at draw; barcode scan against active order.</td><td class="src-ref">A·1 · B·4</td></tr>
+      <tr><td><span class="item-name">Sample mix-up prevention</span><div class="scen">Tech misreads similar names.</div></td><td>Mandatory two-factor verification; mismatch alarm.</td><td class="src-ref">B·4</td></tr>
+      <tr><td><span class="item-name">Sample contamination handling</span><div class="scen">Hemolysed sample rejected.</div></td><td>Rejection workflow; auto re-collection request; no charge for repeat.</td><td class="src-ref">B·4</td></tr>
+      <tr><td><span class="item-name">Critical-value escalation chain</span><div class="scen">K+ 6.8; ordering doctor on a flight.</div></td><td>Primary → on-call → senior → owner. SMS, call, push in parallel; ack required.</td><td class="src-ref">B·4</td></tr>
+      <tr><td><span class="item-name">Mental-health emergency protocol</span><div class="scen">Patient discloses suicidal ideation.</div></td><td>Crisis-protocol alert in Doc App; referral options; sensitive-case access activated.</td><td class="src-ref">B·2</td></tr>
+      <tr><td><span class="item-name">Partial-payment flow</span><div class="scen">Bill NPR 4,200; patient has NPR 1,500.</div></td><td>Outstanding ledger; due-date capture; SMS reminder.</td><td class="src-ref">B·3</td></tr>
+      <tr><td><span class="item-name">Wrong-patient-charged reversal</span><div class="scen">Front desk bills wrong patient.</div></td><td>Reversal flow with reason; original transaction preserved; new audited.</td><td class="src-ref">B·3</td></tr>
+      <tr><td><span class="item-name">Mass-casualty registration mode</span><div class="scen">Bus accident; 30 patients arrive in 20 minutes.</div></td><td>Bulk emergency registration with placeholder IDs; reconcile later.</td><td class="src-ref">B·1</td></tr>
+      <tr><td><span class="item-name">Court / police subpoena</span><div class="scen">Legal record request received.</div></td><td>Documented release workflow; legal authorisation capture; full audit.</td><td class="src-ref">B·5</td></tr>
+      <tr><td><span class="item-name">Doctor-leaves handover</span><div class="scen">Associate doctor resigns.</div></td><td>Patient ownership to clinic; doctor retains CME record; patients notified.</td><td class="src-ref">B·5</td></tr>
+      <tr><td><span class="item-name">Clinic-shutdown handover</span><div class="scen">Customer closes; what about the data?</div></td><td>Retention preserved; patient export option; orderly successor handover.</td><td class="src-ref">B·5</td></tr>
+      <tr><td><span class="item-name">Cyberattack / ransomware response</span><div class="scen">Production servers encrypted.</div></td><td>Documented IR plan; offline backups; breach-notification workflow.</td><td class="src-ref">B·5</td></tr>
+      <tr><td><span class="item-name">SaaS provider outage</span><div class="scen">Datacenter goes dark.</div></td><td>Status page; degraded-mode operation; SLA-credit policy; communication template.</td><td class="src-ref">B·6</td></tr>
+      <tr><td><span class="item-name">Concurrent-edit conflict</span><div class="scen">Doctor and nurse update same record at same instant.</div></td><td>Optimistic locking with version numbers; conflict UI; field-level merge.</td><td class="src-ref">B·8</td></tr>
+      <tr><td><span class="item-name">Customer-silent-30-days alert</span><div class="scen">Customer health drops; no usage.</div></td><td>Health-score alert; CS outreach within 48h; usage diagnostic.</td><td class="src-ref">B·7</td></tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:14px; color:var(--muted); margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--rule); font-style: italic;">
+    Companion documents: <em>Features &amp; user flows</em> (the v2 spec describing what the product does), <em>Nepal Clinic SaaS thesis memo</em> (the market analysis). Read in this order: market thesis → features &amp; flows → this comprehensive design document. The first answers <em>"should we?"</em>, the second <em>"what?"</em>, this one <em>"how, and what could go wrong?"</em>.
+  </p>
+
+</div>
+</body>
+</html>

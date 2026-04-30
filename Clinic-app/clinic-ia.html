@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinic Management — Information Architecture</title>
+<style>
+  :root {
+    --bg: #faf8f3;
+    --paper: #ffffff;
+    --paper-2: #f6f2e7;
+    --ink: #1a1a1a;
+    --ink-soft: #3a3a3a;
+    --muted: #6a6a64;
+    --rule: #d8d3c4;
+    --rule-soft: #ece7d9;
+
+    --fd-bg: #fdf3e3; --fd-ink: #8a5a17; --fd-line: #d9b377; --fd-accent: #c47a1b;
+    --doc-bg: #e9eef5; --doc-ink: #1f3a5f; --doc-line: #7e9bbf; --doc-accent: #2e5586;
+    --pat-bg: #e6efe7; --pat-ink: #2a5a3c; --pat-line: #88ae93; --pat-accent: #3d7c52;
+    --diag-bg: #f1ebf2; --diag-ink: #4f3a55; --diag-line: #a895ae; --diag-accent: #6c4f76;
+
+    --accent: #8b1a1a;
+    --max-w: 980px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .container { max-width: var(--max-w); margin: 0 auto; padding: 56px 32px 88px; }
+
+  h1, h2, h3, h4, .ui, .toc, .nav-flow, .legend, .tree, .typebadge, .nav-pattern { font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-feature-settings: 'ss01' on; }
+  h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 6px; }
+  .subtitle { font-family: 'DM Sans', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 4px; }
+  .byline { font-size: 13px; color: var(--muted); margin: 14px 0 32px; padding: 8px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-family: 'DM Sans', sans-serif; }
+  p { margin: 0 0 14px; }
+
+  /* Section heads — color per app */
+  .section-head {
+    margin: 80px 0 14px;
+    padding: 24px 28px;
+    border-radius: 4px;
+    scroll-margin-top: 24px;
+  }
+  .section-head.fd  { background: var(--fd-bg); border-left: 4px solid var(--fd-line); }
+  .section-head.doc { background: var(--doc-bg); border-left: 4px solid var(--doc-line); }
+  .section-head.diag{ background: var(--diag-bg); border-left: 4px solid var(--diag-line); }
+  .section-head.pat { background: var(--pat-bg); border-left: 4px solid var(--pat-line); }
+  .section-head.gen { background: var(--paper); border: 1px solid var(--rule); border-left: 4px solid var(--accent); }
+
+  .section-head .num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .section-head.fd .num { color: var(--fd-ink); }
+  .section-head.doc .num { color: var(--doc-ink); }
+  .section-head.diag .num { color: var(--diag-ink); }
+  .section-head.pat .num { color: var(--pat-ink); }
+  .section-head.gen .num { color: var(--accent); }
+
+  .section-head h2 {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1.2;
+  }
+  .section-head.fd h2 { color: var(--fd-ink); }
+  .section-head.doc h2 { color: var(--doc-ink); }
+  .section-head.diag h2 { color: var(--diag-ink); }
+  .section-head.pat h2 { color: var(--pat-ink); }
+
+  .section-head .meta {
+    margin-top: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 24px;
+  }
+  .section-head .meta b { font-weight: 700; }
+  .section-head .meta .meta-item .lbl {
+    display: block;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin: 36px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+  h3.fd { color: var(--fd-ink); border-bottom-color: var(--fd-line); }
+  h3.doc { color: var(--doc-ink); border-bottom-color: var(--doc-line); }
+  h3.diag { color: var(--diag-ink); border-bottom-color: var(--diag-line); }
+  h3.pat { color: var(--pat-ink); border-bottom-color: var(--pat-line); }
+
+  /* TOC */
+  .toc {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    padding: 20px 26px;
+    margin: 28px 0;
+    border-radius: 3px;
+  }
+  .toc-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 28px;
+  }
+  @media (max-width: 700px) { .toc-list { grid-template-columns: 1fr; } }
+  .toc-list li {
+    font-size: 13.5px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc-list li:last-child, .toc-list li:nth-last-child(2) { border-bottom: none; }
+  .toc-list a {
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .toc-list a:hover { color: var(--accent); }
+  .toc-list .tnum { font-weight: 700; color: var(--accent); width: 22px; flex-shrink: 0; }
+
+  /* System map — 4 app cards */
+  .system-map {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 18px 0 24px;
+  }
+  @media (max-width: 700px) { .system-map { grid-template-columns: 1fr; } }
+  .app-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 18px 20px;
+    border-top: 4px solid;
+  }
+  .app-card.fd { border-top-color: var(--fd-accent); }
+  .app-card.doc { border-top-color: var(--doc-accent); }
+  .app-card.diag { border-top-color: var(--diag-accent); }
+  .app-card.pat { border-top-color: var(--pat-accent); }
+  .app-card .app-num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .app-card .app-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .app-card.fd .app-name { color: var(--fd-ink); }
+  .app-card.doc .app-name { color: var(--doc-ink); }
+  .app-card.diag .app-name { color: var(--diag-ink); }
+  .app-card.pat .app-name { color: var(--pat-ink); }
+  .app-card .app-desc {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .app-card .app-meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .app-card .app-meta dt { color: var(--muted); font-weight: 600; }
+  .app-card .app-meta dd { margin: 0; color: var(--ink); }
+  .app-card .app-screens {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  /* Shared services panel */
+  .shared-services {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 20px 26px;
+    border-radius: 4px;
+    margin: 24px 0;
+  }
+  .shared-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px 26px;
+    margin-top: 12px;
+  }
+  @media (max-width: 700px) { .shared-grid { grid-template-columns: 1fr; } }
+  .shared-svc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+  }
+  .shared-svc .svc-name {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 13.5px;
+    margin-bottom: 2px;
+  }
+  .shared-svc .svc-desc {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .shared-svc .svc-used {
+    margin-top: 4px;
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .svc-pill {
+    display: inline-block;
+    padding: 0 5px;
+    margin-right: 3px;
+    border-radius: 2px;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .svc-pill.fd { background: var(--fd-accent); }
+  .svc-pill.doc { background: var(--doc-accent); }
+  .svc-pill.diag { background: var(--diag-accent); }
+  .svc-pill.pat { background: var(--pat-accent); }
+
+  /* Cross-app flow diagram */
+  .flow-diagram {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 20px 26px;
+    border-radius: 4px;
+    margin: 18px 0 24px;
+  }
+  .flow-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .flow-row:last-child { border-bottom: none; }
+  .flow-from {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    height: fit-content;
+    text-align: center;
+    color: #fff;
+  }
+  .flow-from.fd { background: var(--fd-accent); }
+  .flow-from.doc { background: var(--doc-accent); }
+  .flow-from.diag { background: var(--diag-accent); }
+  .flow-from.pat { background: var(--pat-accent); }
+  .flow-to {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .flow-to b { font-weight: 700; }
+  .flow-to .arrow { color: var(--accent); margin: 0 4px; }
+  .flow-to .trigger {
+    display: block;
+    font-size: 11.5px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  /* Tree — screen hierarchy */
+  .tree-block {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 14px 0;
+    margin: 18px 0 24px;
+  }
+  .tree {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13.5px;
+  }
+  .tree > li.l1 {
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--rule-soft);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .tree > li.l1:last-child { border-bottom: none; }
+  .tree .num-tag {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: center;
+    line-height: 28px;
+    font-weight: 700;
+  }
+  .tree .l1-content { flex: 1; }
+  .tree .l1-title {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 14.5px;
+    margin-bottom: 2px;
+  }
+  .tree .l1-desc {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+  .tree ul.l2 {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 16px;
+  }
+  @media (max-width: 720px) { .tree ul.l2 { grid-template-columns: 1fr; } }
+  .tree ul.l2 li {
+    padding: 4px 0 4px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .tree ul.l2 li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 8px;
+    height: 1px;
+    background: var(--rule);
+  }
+  .typebadge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 0 5px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+  .typebadge.page { background: var(--rule-soft); color: var(--ink-soft); }
+  .typebadge.modal { background: #e8e0f0; color: #5a3a7a; }
+  .typebadge.flow { background: #e0f0e8; color: #2a5a3c; }
+  .typebadge.empty { background: #f0e0d8; color: #7a4a2a; }
+  .typebadge.role { background: #f0d8d8; color: #7a2a2a; }
+  .typebadge.beta { background: #fef3c7; color: #6a4a10; }
+
+  /* Nav pattern info */
+  .nav-pattern {
+    background: var(--paper-2);
+    padding: 12px 18px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    border-left: 3px solid var(--rule);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 18px;
+    align-items: baseline;
+  }
+  .nav-pattern dt {
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .nav-pattern dd {
+    margin: 0;
+    color: var(--ink);
+  }
+
+  /* Stat row at top of each section */
+  .ia-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 14px 0 20px;
+  }
+  @media (max-width: 700px) { .ia-stats { grid-template-columns: repeat(2, 1fr); } }
+  .ia-stat {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .ia-stat .n {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .ia-stat .l {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin: 14px 0 20px;
+    padding: 12px 16px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    font-size: 11.5px;
+    align-items: center;
+  }
+  .legend .lg-item { display: inline-flex; align-items: center; gap: 5px; }
+
+  .intro-box {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 22px 28px;
+    margin: 24px 0 32px;
+    border-radius: 3px;
+  }
+  .intro-box .lab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .intro-box p { font-size: 16px; line-height: 1.6; }
+  .intro-box p:last-child { margin-bottom: 0; }
+
+  @media (max-width: 640px) {
+    .container { padding: 32px 18px 60px; }
+    h1 { font-size: 26px; }
+    .section-head h2 { font-size: 22px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="subtitle">Product spec · Clinic management platform</div>
+  <h1>Information architecture</h1>
+  <h1 style="font-size:18px;font-weight:500;color:var(--muted);margin-top:0;">Four apps · screen hierarchy · navigation flows · cross-app handoffs</h1>
+  <div class="byline">
+    The map before the mockups. What screens exist in each app, how users move between them, and how the four apps connect into one product.
+  </div>
+
+  <div class="intro-box">
+    <div class="lab">How to read this</div>
+    <p>The product is four apps sharing one data backbone. <b>Front Desk</b> is for reception and billing. <b>Doc App</b> is the doctor's clinical workspace. <b>Diagnostic App</b> is for the lab and imaging team. <b>Patient App</b> is for the patient on mobile.</p>
+    <p>This document covers four things in order: a system map showing what the four apps are and how they connect; the shared services they all consume; cross-app handoffs end-to-end; and then each app's screen hierarchy and internal navigation flows. <em>Mockups follow in a separate document.</em></p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#system"><span class="tnum">§1</span><span>System map · the four apps</span></a></li>
+      <li><a href="#shared"><span class="tnum">§2</span><span>Shared services &amp; data backbone</span></a></li>
+      <li><a href="#handoffs"><span class="tnum">§3</span><span>Cross-app handoffs</span></a></li>
+      <li><a href="#legend"><span class="tnum">§4</span><span>Notation &amp; legend</span></a></li>
+      <li><a href="#fd"><span class="tnum">A</span><span>Front Desk · IA</span></a></li>
+      <li><a href="#doc"><span class="tnum">B</span><span>Doc App · IA</span></a></li>
+      <li><a href="#diag"><span class="tnum">C</span><span>Diagnostic App · IA</span></a></li>
+      <li><a href="#pat"><span class="tnum">D</span><span>Patient App · IA</span></a></li>
+    </ul>
+  </div>
+
+  <!-- ============================================================
+       §1 SYSTEM MAP
+       ============================================================ -->
+  <div class="section-head gen" id="system">
+    <span class="num">§1</span>
+    <h2>System map · the four apps</h2>
+  </div>
+
+  <p style="font-size:14.5px;color:var(--ink-soft);">Four apps, one shared data backbone. Each app is sized to its user — desktop where staff need a keyboard and screen real estate, mobile where the patient needs portability.</p>
+
+  <div class="system-map">
+    <div class="app-card fd">
+      <div class="app-num">App 1</div>
+      <div class="app-name">Front Desk</div>
+      <div class="app-desc">Reception, registration, scheduling, billing, day-end reconciliation. The visible heartbeat of the clinic — used continuously, in front of the patient.</div>
+      <dl class="app-meta">
+        <dt>User</dt><dd>Receptionist · Bill-desk operator · Owner</dd>
+        <dt>Device</dt><dd>Desktop · keyboard-first</dd>
+        <dt>Nav</dt><dd>Top brand bar + left sidebar</dd>
+        <dt>Offline</dt><dd>Required (P0)</dd>
+      </dl>
+      <div class="app-screens">6 sections · ~26 screens · 8 modals</div>
+    </div>
+
+    <div class="app-card doc">
+      <div class="app-num">App 2</div>
+      <div class="app-name">Doc App</div>
+      <div class="app-desc">Doctor's clinical workspace. Patient context loads in under 2 seconds. Voice-first ambient prescription is the differentiator.</div>
+      <dl class="app-meta">
+        <dt>User</dt><dd>Doctor · Specialist · Locum</dd>
+        <dt>Device</dt><dd>Desktop or tablet</dd>
+        <dt>Nav</dt><dd>Top brand bar + left sidebar</dd>
+        <dt>Offline</dt><dd>Required (P0)</dd>
+      </dl>
+      <div class="app-screens">5 sections · ~22 screens · 6 modals</div>
+    </div>
+
+    <div class="app-card diag">
+      <div class="app-num">App 3</div>
+      <div class="app-name">Diagnostic App</div>
+      <div class="app-desc">Lab and imaging team. Order intake, sample collection, result entry, verification, external report ingestion. Multi-day workflows for path/microbiology.</div>
+      <dl class="app-meta">
+        <dt>User</dt><dd>Lab tech · Pathologist · Radiologist · Lab manager</dd>
+        <dt>Device</dt><dd>Desktop · barcode-scanner integration</dd>
+        <dt>Nav</dt><dd>Top brand bar + left sidebar</dd>
+        <dt>Offline</dt><dd>Partial — result entry yes; analyzer integration no</dd>
+      </dl>
+      <div class="app-screens">5 sections · ~20 screens · 5 modals</div>
+    </div>
+
+    <div class="app-card pat">
+      <div class="app-num">App 4</div>
+      <div class="app-name">Patient App</div>
+      <div class="app-desc">Patient mobile. Booking, live queue, records, family-linked profiles, recall acceptance. Primary surface where the clinic stays present in the patient's life.</div>
+      <dl class="app-meta">
+        <dt>User</dt><dd>Patient · primary contact · family member</dd>
+        <dt>Device</dt><dd>Mobile (iOS · Android · web)</dd>
+        <dt>Nav</dt><dd>Bottom tab bar + screen header</dd>
+        <dt>Offline</dt><dd>Read-only when offline (records cached)</dd>
+      </dl>
+      <div class="app-screens">5 sections · ~18 screens · 4 modals</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       §2 SHARED SERVICES
+       ============================================================ -->
+  <div class="section-head gen" id="shared">
+    <span class="num">§2</span>
+    <h2>Shared services &amp; data backbone</h2>
+  </div>
+
+  <p style="font-size:14.5px;color:var(--ink-soft);">The four apps are clients on a single backbone. These services are <em>not</em> screens — they are the things every app reads from and writes to.</p>
+
+  <div class="shared-services">
+    <div class="shared-grid">
+
+      <div class="shared-svc">
+        <div class="svc-name">Patient identity</div>
+        <div class="svc-desc">Single source of truth for who a patient is. Fuzzy duplicate detection, family linking, name history, primary-contact mapping.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill doc">Doc</span><span class="svc-pill diag">Diag</span><span class="svc-pill pat">Pat</span> all four</div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">EMR core</div>
+        <div class="svc-desc">Encounters, vitals, diagnosis, prescription, attachments. Versioned, audited, BS/AD aware.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill doc">Doc</span><span class="svc-pill diag">Diag</span><span class="svc-pill pat">Pat</span> all four</div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Scheduling &amp; queue</div>
+        <div class="svc-desc">Slot inventory, doctor leave, double-book prevention, live token state machine, triage priority.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill doc">Doc</span><span class="svc-pill pat">Pat</span></div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Billing engine</div>
+        <div class="svc-desc">Cart, VAT-exempt vs taxable split, discounts, refunds, partial pay, NHIP / SSF / corporate / package billing, IRD-compliant invoice.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill pat">Pat</span> read-only</div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Diagnostic order &amp; result</div>
+        <div class="svc-desc">Orders, samples, reference ranges, delta-check, critical-value escalation, external report ingestion.</div>
+        <div class="svc-used"><span class="svc-pill doc">Doc</span><span class="svc-pill diag">Diag</span><span class="svc-pill fd">FD</span><span class="svc-pill pat">Pat</span></div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Prescription &amp; drug master</div>
+        <div class="svc-desc">NDA-aligned brand-generic mapping, allergy / interaction checks, weight-based dosing, controlled-substance ledger.</div>
+        <div class="svc-used"><span class="svc-pill doc">Doc</span><span class="svc-pill fd">FD</span> pharmacy <span class="svc-pill pat">Pat</span></div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Notification fanout</div>
+        <div class="svc-desc">SMS gateway, WhatsApp Business, push, email, in-app. NTA DND-compliant. Channel preference per patient.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill doc">Doc</span><span class="svc-pill diag">Diag</span><span class="svc-pill pat">Pat</span></div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Auth &amp; permissions</div>
+        <div class="svc-desc">Staff SSO + 2FA, granular role permissions, sensitive-case access controls, multi-clinic context switch, locum time-bound access.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill doc">Doc</span><span class="svc-pill diag">Diag</span></div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Audit log &amp; consent</div>
+        <div class="svc-desc">Immutable trail of who saw / edited what when. Versioned consent capture per Privacy Act 2018.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill doc">Doc</span><span class="svc-pill diag">Diag</span><span class="svc-pill pat">Pat</span></div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Recall &amp; rules engine</div>
+        <div class="svc-desc">Condition-based recall scheduling, churn-risk scoring, clinical-condition tagging, reflex test rules.</div>
+        <div class="svc-used"><span class="svc-pill doc">Doc</span><span class="svc-pill pat">Pat</span><span class="svc-pill fd">FD</span></div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">Payment rails</div>
+        <div class="svc-desc">eSewa, Khalti, FonePay, ConnectIPS, card POS, cash. Settlement reconciliation against billing engine.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill pat">Pat</span></div>
+      </div>
+
+      <div class="shared-svc">
+        <div class="svc-name">External integrations</div>
+        <div class="svc-desc">Tally Prime export, HIB / SSF eligibility, NMC verification, DoHS HMIS reporting, EDCD notifiable diseases, lab analyzer HL7/ASTM, DICOM PACS.</div>
+        <div class="svc-used"><span class="svc-pill fd">FD</span><span class="svc-pill diag">Diag</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       §3 CROSS-APP HANDOFFS
+       ============================================================ -->
+  <div class="section-head gen" id="handoffs">
+    <span class="num">§3</span>
+    <h2>Cross-app handoffs</h2>
+  </div>
+
+  <p style="font-size:14.5px;color:var(--ink-soft);">Where one app's action triggers state change in another. These are the seams that have to be designed deliberately — silent failures here cause user confusion across apps.</p>
+
+  <div class="flow-diagram">
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>Patient books appointment</b><span class="arrow">→</span> Front Desk queue + Doc App schedule + scheduling service<span class="trigger">Pre-consult symptom form filled by patient surfaces in Doc App before patient arrives</span></span></div>
+
+    <div class="flow-row"><span class="flow-from fd">FD</span><span class="flow-to"><b>Patient marked "arrived"</b><span class="arrow">→</span> Doc App today's queue · token assigned · live position broadcast to Patient App<span class="trigger">Triage urgency is set here; emergency / pediatric / elderly jump the queue</span></span></div>
+
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Doctor orders test</b><span class="arrow">→</span> Diagnostic App order queue · pricing pulled into Front Desk cart<span class="trigger">Reflex rules may auto-add tests; allergy / drug checks fire on prescription</span></span></div>
+
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Prescription finalised</b><span class="arrow">→</span> Patient App (with plain-language note) · in-house pharmacy queue · Front Desk cart<span class="trigger">Refill rules captured at original prescribing; allergy banner persists across visits</span></span></div>
+
+    <div class="flow-row"><span class="flow-from diag">Diag</span><span class="flow-to"><b>Sample collected</b><span class="arrow">→</span> Doc App ("sample drawn"); status visible in Patient App live screen<span class="trigger">Two-factor patient ID verification at draw blocks mismatched samples</span></span></div>
+
+    <div class="flow-row"><span class="flow-from diag">Diag</span><span class="flow-to"><b>Result verified &amp; released</b><span class="arrow">→</span> Doc App (inline in encounter or later) · Patient App report viewer · WhatsApp + SMS notification<span class="trigger">Critical values trigger an out-of-band escalation chain to the ordering doctor</span></span></div>
+
+    <div class="flow-row"><span class="flow-from fd">FD</span><span class="flow-to"><b>Bill paid</b><span class="arrow">→</span> Patient App receipt · accounting ledger · Tally export queue · diagnostic order activates if blocked on payment<span class="trigger">VAT-exempt vs taxable lines kept distinct for IRD audit</span></span></div>
+
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>Patient uploads external report</b><span class="arrow">→</span> Diagnostic App review queue · once tagged, surfaces in Doc App trend graphs<span class="trigger">Removes the social friction of "telling on yourself" — explicitly welcomed</span></span></div>
+
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Recall scheduled</b><span class="arrow">→</span> rules engine · Patient App reminder · Front Desk recall list · re-engagement loop<span class="trigger">Condition-driven (HbA1c last &gt; 90 days for diabetics, etc.) — not calendar-driven</span></span></div>
+
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Critical-value alert acknowledged</b><span class="arrow">→</span> escalation chain stops · Diagnostic App audit log records ack · patient notified per protocol<span class="trigger">If unacked in N minutes, escalates: ordering → on-call → senior → owner</span></span></div>
+  </div>
+
+  <!-- ============================================================
+       §4 NOTATION
+       ============================================================ -->
+  <div class="section-head gen" id="legend">
+    <span class="num">§4</span>
+    <h2>Notation &amp; legend</h2>
+  </div>
+
+  <div class="legend">
+    <div class="lg-item"><span class="typebadge page">page</span> full screen</div>
+    <div class="lg-item"><span class="typebadge modal">modal</span> overlay / dialog</div>
+    <div class="lg-item"><span class="typebadge flow">flow</span> multi-step wizard</div>
+    <div class="lg-item"><span class="typebadge empty">empty</span> empty / null state</div>
+    <div class="lg-item"><span class="typebadge role">role</span> role-restricted</div>
+    <div class="lg-item"><span class="typebadge beta">later</span> wave 3+ / beta</div>
+  </div>
+
+  <p style="font-size:13.5px;color:var(--muted);">Numbering convention: <b>A.1</b> is the first top-level section in App A (Front Desk), <b>A.1.2</b> is the second sub-screen under it. Refer to screens by these IDs in design reviews and engineering tickets.</p>
+
+  <!-- ============================================================
+       APP A — FRONT DESK
+       ============================================================ -->
+  <div class="section-head fd" id="fd">
+    <span class="num">App A · Front Desk</span>
+    <h2>Front Desk · IA</h2>
+    <div class="meta" style="color:var(--fd-ink);">
+      <div class="meta-item"><span class="lbl">User</span>Receptionist · Bill desk · Owner</div>
+      <div class="meta-item"><span class="lbl">Device</span>Desktop · keyboard-first</div>
+      <div class="meta-item"><span class="lbl">Sections</span>6 top-level</div>
+      <div class="meta-item"><span class="lbl">Screens</span>~26 + 8 modals</div>
+    </div>
+  </div>
+
+  <h3 class="fd">A.0 · Navigation pattern</h3>
+  <dl class="nav-pattern">
+    <dt>Primary</dt><dd>Top brand bar (logo · global search · notifications · user) + left sidebar with 6 sections</dd>
+    <dt>Secondary</dt><dd>Tabs within Patient profile, Billing detail, Day-end</dd>
+    <dt>Global</dt><dd>Quick search (⌘K) jumps to any patient, appointment, bill, or report</dd>
+  </dl>
+
+  <h3 class="fd">A.1 · Screen hierarchy</h3>
+  <div class="tree-block">
+    <ul class="tree">
+
+      <li class="l1">
+        <div class="num-tag">1</div>
+        <div class="l1-content">
+          <div class="l1-title">Dashboard</div>
+          <div class="l1-desc">Landing screen. Today's queue + KPIs + critical alerts.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>1.1 Today overview · KPIs</li>
+            <li><span class="typebadge page">page</span>1.2 Live queue (all doctors)</li>
+            <li><span class="typebadge page">page</span>1.3 Critical alerts feed</li>
+            <li><span class="typebadge modal">modal</span>1.4 Quick walk-in registration</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">2</div>
+        <div class="l1-content">
+          <div class="l1-title">Patients</div>
+          <div class="l1-desc">Search, register, manage. The most-used section in the app.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>2.1 Patient search</li>
+            <li><span class="typebadge page">page</span>2.2 Patient profile · summary</li>
+            <li><span class="typebadge page">page</span>2.3 Patient profile · visits history</li>
+            <li><span class="typebadge page">page</span>2.4 Patient profile · billing history</li>
+            <li><span class="typebadge page">page</span>2.5 Patient profile · documents</li>
+            <li><span class="typebadge flow">flow</span>2.6 New patient registration</li>
+            <li><span class="typebadge modal">modal</span>2.7 Duplicate detection warning</li>
+            <li><span class="typebadge modal">modal</span>2.8 Family link manager</li>
+            <li><span class="typebadge modal">modal</span>2.9 External report upload</li>
+            <li><span class="typebadge modal">modal</span>2.10 Identity verification (sensitive cases)</li>
+            <li><span class="typebadge empty">empty</span>2.11 No matches found</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">3</div>
+        <div class="l1-content">
+          <div class="l1-title">Appointments</div>
+          <div class="l1-desc">Multi-doctor calendar. Day, week, list views.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>3.1 Day view · multi-doctor calendar</li>
+            <li><span class="typebadge page">page</span>3.2 Week view</li>
+            <li><span class="typebadge page">page</span>3.3 List view (by date range)</li>
+            <li><span class="typebadge flow">flow</span>3.4 Book appointment</li>
+            <li><span class="typebadge modal">modal</span>3.5 Reschedule / cancel</li>
+            <li><span class="typebadge page">page</span>3.6 Walk-in registration</li>
+            <li><span class="typebadge page">page</span>3.7 Waitlist</li>
+            <li><span class="typebadge modal">modal</span>3.8 Doctor sudden-unavailability mass-reschedule</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">4</div>
+        <div class="l1-content">
+          <div class="l1-title">Billing</div>
+          <div class="l1-desc">Cart checkout, refunds, insurance, corporate, packages.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>4.1 Cart · current patient checkout</li>
+            <li><span class="typebadge page">page</span>4.2 Outstanding ledger</li>
+            <li><span class="typebadge flow">flow</span>4.3 Refund / reversal</li>
+            <li><span class="typebadge flow">flow</span>4.4 NHIP claim packet</li>
+            <li><span class="typebadge flow">flow</span>4.5 SSF claim</li>
+            <li><span class="typebadge page">page</span>4.6 Corporate billing · monthly aggregate</li>
+            <li><span class="typebadge page">page</span>4.7 Package billing (maternity, surgery)</li>
+            <li><span class="typebadge modal">modal</span>4.8 Partial-payment / outstanding</li>
+            <li><span class="typebadge role">role</span>4.9 Discount above threshold (supervisor approval)</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">5</div>
+        <div class="l1-content">
+          <div class="l1-title">Reports &amp; Day-end</div>
+          <div class="l1-desc">Daily reconciliation, doctor-wise revenue, exports.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>5.1 Daily collection summary</li>
+            <li><span class="typebadge page">page</span>5.2 Cash reconciliation · day-end</li>
+            <li><span class="typebadge page">page</span>5.3 Doctor-wise revenue</li>
+            <li><span class="typebadge page">page</span>5.4 Service / test mix</li>
+            <li><span class="typebadge page">page</span>5.5 Tally Prime export</li>
+            <li><span class="typebadge role">role</span>5.6 Owner dashboard (financials)</li>
+            <li><span class="typebadge modal">modal</span>5.7 Cash variance · supervisor sign-off</li>
+            <li><span class="typebadge page">page</span>5.8 Day-close lock</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">6</div>
+        <div class="l1-content">
+          <div class="l1-title">Settings</div>
+          <div class="l1-desc">Staff, schedules, catalogue, templates.</div>
+          <ul class="l2">
+            <li><span class="typebadge role">role</span>6.1 Staff &amp; roles · permissions</li>
+            <li><span class="typebadge page">page</span>6.2 Doctor schedules &amp; consult fees</li>
+            <li><span class="typebadge page">page</span>6.3 Service / test catalogue</li>
+            <li><span class="typebadge page">page</span>6.4 Receipt templates · BS/AD format</li>
+            <li><span class="typebadge page">page</span>6.5 Clinic profile · branding</li>
+            <li><span class="typebadge role">role</span>6.6 Audit log review</li>
+          </ul>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+
+  <h3 class="fd">A.2 · Primary navigation flows</h3>
+  <div class="flow-diagram">
+    <div class="flow-row"><span class="flow-from fd">FD</span><span class="flow-to"><b>Dashboard</b> <span class="arrow">→</span> Patient profile <span class="trigger">click row in today's queue · context loads inline</span></span></div>
+    <div class="flow-row"><span class="flow-from fd">FD</span><span class="flow-to"><b>Patient search</b> <span class="arrow">→</span> Duplicate warning modal <span class="arrow">→</span> Use match · OR · Continue to new registration <span class="trigger">most-frequent flow in the app</span></span></div>
+    <div class="flow-row"><span class="flow-from fd">FD</span><span class="flow-to"><b>Patient profile</b> <span class="arrow">→</span> Book appointment modal <span class="arrow">→</span> Calendar slot <span class="arrow">→</span> Confirmation</span></div>
+    <div class="flow-row"><span class="flow-from fd">FD</span><span class="flow-to"><b>Calendar</b> <span class="arrow">→</span> Patient arrives <span class="arrow">→</span> Mark "arrived" <span class="arrow">→</span> Doc App queue updated automatically <span class="trigger">cross-app handoff</span></span></div>
+    <div class="flow-row"><span class="flow-from fd">FD</span><span class="flow-to"><b>Doc App finishes consult</b> <span class="arrow">→</span> Cart auto-populates <span class="arrow">→</span> Payment <span class="arrow">→</span> Receipt + WhatsApp</span></div>
+    <div class="flow-row"><span class="flow-from fd">FD</span><span class="flow-to"><b>End of day</b> <span class="arrow">→</span> Cash count <span class="arrow">→</span> Variance check <span class="arrow">→</span> Tally export <span class="arrow">→</span> Day lock</span></div>
+  </div>
+
+  <!-- ============================================================
+       APP B — DOC APP
+       ============================================================ -->
+  <div class="section-head doc" id="doc">
+    <span class="num">App B · Doc App</span>
+    <h2>Doc App · IA</h2>
+    <div class="meta" style="color:var(--doc-ink);">
+      <div class="meta-item"><span class="lbl">User</span>Doctor · Specialist · Locum</div>
+      <div class="meta-item"><span class="lbl">Device</span>Desktop or tablet</div>
+      <div class="meta-item"><span class="lbl">Sections</span>5 top-level</div>
+      <div class="meta-item"><span class="lbl">Screens</span>~22 + 6 modals</div>
+    </div>
+  </div>
+
+  <h3 class="doc">B.0 · Navigation pattern</h3>
+  <dl class="nav-pattern">
+    <dt>Primary</dt><dd>Top brand bar + left sidebar with 5 sections</dd>
+    <dt>Encounter</dt><dd>Patient encounter is a single screen with 6 internal tabs (Summary · Vitals &amp; Labs · History · Examine · Prescription · Tests)</dd>
+    <dt>Voice mode</dt><dd>Overlay launched from any encounter tab; dismissable; transcript persists</dd>
+    <dt>Global</dt><dd>Quick search by patient, condition, or symptom</dd>
+  </dl>
+
+  <h3 class="doc">B.1 · Screen hierarchy</h3>
+  <div class="tree-block">
+    <ul class="tree">
+
+      <li class="l1">
+        <div class="num-tag">1</div>
+        <div class="l1-content">
+          <div class="l1-title">Today</div>
+          <div class="l1-desc">Doctor's landing screen — queue + critical alerts.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>1.1 Today's queue · triage-sorted</li>
+            <li><span class="typebadge page">page</span>1.2 Pre-consult symptoms preview</li>
+            <li><span class="typebadge modal">modal</span>1.3 Critical-value alert (cross-app from Diag)</li>
+            <li><span class="typebadge empty">empty</span>1.4 No patients yet · empty queue state</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">2</div>
+        <div class="l1-content">
+          <div class="l1-title">Patient encounter</div>
+          <div class="l1-desc">Single-screen workspace with 6 tabs. Voice mode overlays it.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>2.1 Tab · Summary &amp; allergies</li>
+            <li><span class="typebadge page">page</span>2.2 Tab · Vitals &amp; labs (with trends)</li>
+            <li><span class="typebadge page">page</span>2.3 Tab · History &amp; timeline</li>
+            <li><span class="typebadge page">page</span>2.4 Tab · Examine &amp; notes</li>
+            <li><span class="typebadge page">page</span>2.5 Tab · Prescription</li>
+            <li><span class="typebadge page">page</span>2.6 Tab · Tests &amp; results</li>
+            <li><span class="typebadge modal">modal</span>2.7 Voice mode · ambient capture</li>
+            <li><span class="typebadge modal">modal</span>2.8 Drug-interaction warning</li>
+            <li><span class="typebadge modal">modal</span>2.9 Allergy hard-block</li>
+            <li><span class="typebadge modal">modal</span>2.10 Pediatric weight-based dose calculator</li>
+            <li><span class="typebadge modal">modal</span>2.11 Pregnancy contraindication alert</li>
+            <li><span class="typebadge modal">modal</span>2.12 Refer-to-hospital handoff</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">3</div>
+        <div class="l1-content">
+          <div class="l1-title">My patients</div>
+          <div class="l1-desc">Longitudinal view across all visits.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>3.1 Patient list (longitudinal)</li>
+            <li><span class="typebadge page">page</span>3.2 Filter by condition / age / last visit</li>
+            <li><span class="typebadge page">page</span>3.3 Care plan view (chronic patient)</li>
+            <li><span class="typebadge page">page</span>3.4 Disease registry · DM</li>
+            <li><span class="typebadge page">page</span>3.5 Disease registry · HTN</li>
+            <li><span class="typebadge page">page</span>3.6 Recall list · due / overdue</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">4</div>
+        <div class="l1-content">
+          <div class="l1-title">Telemedicine</div>
+          <div class="l1-desc">Scheduled video and async chat. Tele consent captured at start.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>4.1 Scheduled tele-consults today</li>
+            <li><span class="typebadge page">page</span>4.2 Live video session</li>
+            <li><span class="typebadge page">page</span>4.3 Async chat queue</li>
+            <li><span class="typebadge modal">modal</span>4.4 Tele consent · identity verification</li>
+            <li><span class="typebadge beta">later</span>4.5 Recording &amp; playback (Wave 4)</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">5</div>
+        <div class="l1-content">
+          <div class="l1-title">Personal dashboard</div>
+          <div class="l1-desc">Doctor's own metrics — own patients, top diagnoses, CME hours.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>5.1 Today's count · own earnings</li>
+            <li><span class="typebadge page">page</span>5.2 Common diagnoses · top drugs</li>
+            <li><span class="typebadge page">page</span>5.3 Average consult time · trends</li>
+            <li><span class="typebadge page">page</span>5.4 CME hours tracker</li>
+          </ul>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+
+  <h3 class="doc">B.2 · Primary navigation flows</h3>
+  <div class="flow-diagram">
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Today's queue</b> <span class="arrow">→</span> click patient row <span class="arrow">→</span> Encounter loads with pre-consult symptoms pre-filled</span></div>
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Encounter (any tab)</b> <span class="arrow">→</span> tap mic icon <span class="arrow">→</span> Voice mode overlay <span class="arrow">→</span> ambient transcript runs in background <span class="trigger">doctor maintains eye contact</span></span></div>
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Voice transcript</b> <span class="arrow">→</span> AI extract draft visit note + prescription <span class="arrow">→</span> doctor reviews on Prescription tab <span class="arrow">→</span> finalise</span></div>
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Prescription tab · search drug</b> <span class="arrow">→</span> drug master autocomplete <span class="arrow">→</span> interaction / allergy check fires <span class="arrow">→</span> add or block</span></div>
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Tests tab · order test</b> <span class="arrow">→</span> Diagnostic App queue (cross-app) · pricing → Front Desk cart</span></div>
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Encounter complete</b> <span class="arrow">→</span> save &amp; close <span class="arrow">→</span> Patient App push (with plain-language note) · pharmacy queue · Front Desk billing trigger</span></div>
+    <div class="flow-row"><span class="flow-from doc">Doc</span><span class="flow-to"><b>Critical-value alert</b> (out-of-band) <span class="arrow">→</span> doctor acknowledges <span class="arrow">→</span> escalation chain stops <span class="arrow">→</span> patient notified per protocol</span></div>
+  </div>
+
+  <!-- ============================================================
+       APP C — DIAGNOSTIC APP
+       ============================================================ -->
+  <div class="section-head diag" id="diag">
+    <span class="num">App C · Diagnostic</span>
+    <h2>Diagnostic App · IA</h2>
+    <div class="meta" style="color:var(--diag-ink);">
+      <div class="meta-item"><span class="lbl">User</span>Lab tech · Pathologist · Radiologist · Lab manager</div>
+      <div class="meta-item"><span class="lbl">Device</span>Desktop · barcode scanner</div>
+      <div class="meta-item"><span class="lbl">Sections</span>5 top-level</div>
+      <div class="meta-item"><span class="lbl">Screens</span>~20 + 5 modals</div>
+    </div>
+  </div>
+
+  <h3 class="diag">C.0 · Navigation pattern</h3>
+  <dl class="nav-pattern">
+    <dt>Primary</dt><dd>Top brand bar + left sidebar with 5 sections</dd>
+    <dt>Within section</dt><dd>Status tabs across top: Pending · Sample collected · In-progress · Verified · Released</dd>
+    <dt>Department filter</dt><dd>Persistent filter (Path · Microbiology · Biochem · Imaging · Send-out)</dd>
+    <dt>Verification queue</dt><dd>Pathologist / radiologist sees only items awaiting their verification</dd>
+  </dl>
+
+  <h3 class="diag">C.1 · Screen hierarchy</h3>
+  <div class="tree-block">
+    <ul class="tree">
+
+      <li class="l1">
+        <div class="num-tag">1</div>
+        <div class="l1-content">
+          <div class="l1-title">Orders</div>
+          <div class="l1-desc">Incoming test orders. Queue filtered by status and department.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>1.1 Orders queue · all departments</li>
+            <li><span class="typebadge page">page</span>1.2 Order detail</li>
+            <li><span class="typebadge page">page</span>1.3 Filter by department</li>
+            <li><span class="typebadge page">page</span>1.4 Stat / urgent orders</li>
+            <li><span class="typebadge modal">modal</span>1.5 Add-on test on existing sample</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">2</div>
+        <div class="l1-content">
+          <div class="l1-title">Samples</div>
+          <div class="l1-desc">Collection, tracking, rejection, send-out.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>2.1 Sample collection workspace</li>
+            <li><span class="typebadge modal">modal</span>2.2 Patient ID two-factor verification</li>
+            <li><span class="typebadge page">page</span>2.3 Active sample tracking</li>
+            <li><span class="typebadge flow">flow</span>2.4 Sample rejection · re-collection request</li>
+            <li><span class="typebadge page">page</span>2.5 Send-out tracking (external lab)</li>
+            <li><span class="typebadge modal">modal</span>2.6 Sample mix-up alarm</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">3</div>
+        <div class="l1-content">
+          <div class="l1-title">Results</div>
+          <div class="l1-desc">Result entry, verification, release, multi-day workflows.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>3.1 Result entry (test-specific template)</li>
+            <li><span class="typebadge page">page</span>3.2 Pathologist / radiologist verification queue</li>
+            <li><span class="typebadge page">page</span>3.3 Released results · today</li>
+            <li><span class="typebadge page">page</span>3.4 Critical values log</li>
+            <li><span class="typebadge flow">flow</span>3.5 Microbiology workflow (multi-day)</li>
+            <li><span class="typebadge flow">flow</span>3.6 Histopathology workflow (multi-day)</li>
+            <li><span class="typebadge flow">flow</span>3.7 Result amendment after release</li>
+            <li><span class="typebadge modal">modal</span>3.8 Delta-check warning</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">4</div>
+        <div class="l1-content">
+          <div class="l1-title">External</div>
+          <div class="l1-desc">External report ingestion — uploaded by patient or front desk.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>4.1 External upload review queue</li>
+            <li><span class="typebadge page">page</span>4.2 Tag &amp; extract values</li>
+            <li><span class="typebadge page">page</span>4.3 Reviewed external reports archive</li>
+            <li><span class="typebadge empty">empty</span>4.4 Nothing pending review</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">5</div>
+        <div class="l1-content">
+          <div class="l1-title">Reports &amp; settings</div>
+          <div class="l1-desc">Lab manager dashboards, QC, catalogue.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>5.1 TAT dashboard (turnaround time)</li>
+            <li><span class="typebadge page">page</span>5.2 Volume by department · trends</li>
+            <li><span class="typebadge page">page</span>5.3 Critical-value log review</li>
+            <li><span class="typebadge page">page</span>5.4 QC log &amp; reagent expiry</li>
+            <li><span class="typebadge page">page</span>5.5 Test catalogue · reference ranges</li>
+            <li><span class="typebadge page">page</span>5.6 Analyzer integration status</li>
+          </ul>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+
+  <h3 class="diag">C.2 · Primary navigation flows</h3>
+  <div class="flow-diagram">
+    <div class="flow-row"><span class="flow-from diag">Diag</span><span class="flow-to"><b>New order arrives</b> (from Doc App or paid Front Desk cart) <span class="arrow">→</span> Orders queue <span class="arrow">→</span> tech picks up</span></div>
+    <div class="flow-row"><span class="flow-from diag">Diag</span><span class="flow-to"><b>Sample collection</b> <span class="arrow">→</span> Patient ID two-factor verification <span class="arrow">→</span> barcode print <span class="arrow">→</span> sample drawn <span class="arrow">→</span> queue for processing <span class="trigger">mismatch alarm blocks the draw</span></span></div>
+    <div class="flow-row"><span class="flow-from diag">Diag</span><span class="flow-to"><b>Result entry</b> <span class="arrow">→</span> values entered against reference range <span class="arrow">→</span> abnormal auto-flagged <span class="arrow">→</span> delta-check fires if applicable <span class="arrow">→</span> submit for verification</span></div>
+    <div class="flow-row"><span class="flow-from diag">Diag</span><span class="flow-to"><b>Pathologist verifies</b> <span class="arrow">→</span> digital signature <span class="arrow">→</span> result released <span class="arrow">→</span> Doc App + Patient App fanout <span class="trigger">critical values trigger out-of-band escalation</span></span></div>
+    <div class="flow-row"><span class="flow-from diag">Diag</span><span class="flow-to"><b>External report uploaded</b> (by patient or front desk) <span class="arrow">→</span> review queue <span class="arrow">→</span> tag source / test type / values <span class="arrow">→</span> merge into trend graphs</span></div>
+    <div class="flow-row"><span class="flow-from diag">Diag</span><span class="flow-to"><b>Microbiology long-cycle</b> <span class="arrow">→</span> preliminary report at 24h <span class="arrow">→</span> sensitivity at 48–72h <span class="arrow">→</span> final at 96h <span class="trigger">ordering doctor notified at each stage</span></span></div>
+  </div>
+
+  <!-- ============================================================
+       APP D — PATIENT APP
+       ============================================================ -->
+  <div class="section-head pat" id="pat">
+    <span class="num">App D · Patient</span>
+    <h2>Patient App · IA</h2>
+    <div class="meta" style="color:var(--pat-ink);">
+      <div class="meta-item"><span class="lbl">User</span>Patient · primary contact · family member</div>
+      <div class="meta-item"><span class="lbl">Device</span>Mobile (iOS · Android · web)</div>
+      <div class="meta-item"><span class="lbl">Sections</span>5 top-level (bottom nav)</div>
+      <div class="meta-item"><span class="lbl">Screens</span>~18 + 4 modals</div>
+    </div>
+  </div>
+
+  <h3 class="pat">D.0 · Navigation pattern</h3>
+  <dl class="nav-pattern">
+    <dt>Primary</dt><dd>Bottom tab bar with 5 destinations: Home · Records · Book · Family · Profile</dd>
+    <dt>Header</dt><dd>Per-screen header with greeting, profile switcher (for family-linked accounts), and notification bell</dd>
+    <dt>Live token</dt><dd>Promoted to a top-of-screen banner during active visit; tap to expand to full-screen token display</dd>
+    <dt>Auth</dt><dd>OTP-based login; family-linked profiles disambiguate at sign-in if the mobile is shared</dd>
+  </dl>
+
+  <h3 class="pat">D.1 · Screen hierarchy</h3>
+  <div class="tree-block">
+    <ul class="tree">
+
+      <li class="l1">
+        <div class="num-tag">1</div>
+        <div class="l1-content">
+          <div class="l1-title">Home</div>
+          <div class="l1-desc">Greeting, upcoming appointment, quick actions, recent activity.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>1.1 Dashboard · greeting + upcoming + actions</li>
+            <li><span class="typebadge page">page</span>1.2 Recall reminders feed</li>
+            <li><span class="typebadge modal">modal</span>1.3 Live token / queue (during active visit)</li>
+            <li><span class="typebadge empty">empty</span>1.4 First-time user · no history yet</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">2</div>
+        <div class="l1-content">
+          <div class="l1-title">Records</div>
+          <div class="l1-desc">All visits, reports, prescriptions, bills.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>2.1 All records (chronological)</li>
+            <li><span class="typebadge page">page</span>2.2 Filter · visits / labs / Rx / bills</li>
+            <li><span class="typebadge page">page</span>2.3 Single record view</li>
+            <li><span class="typebadge page">page</span>2.4 Single prescription view + reminders</li>
+            <li><span class="typebadge page">page</span>2.5 Single lab report view</li>
+            <li><span class="typebadge flow">flow</span>2.6 Upload external report</li>
+            <li><span class="typebadge flow">flow</span>2.7 Set medication reminder</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">3</div>
+        <div class="l1-content">
+          <div class="l1-title">Book</div>
+          <div class="l1-desc">Appointment booking · pre-consult symptom intake · reschedule.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>3.1 Doctor search</li>
+            <li><span class="typebadge page">page</span>3.2 Doctor profile (specialty, NMC, fee)</li>
+            <li><span class="typebadge page">page</span>3.3 Slot picker · day · time</li>
+            <li><span class="typebadge flow">flow</span>3.4 Pre-consult symptom intake</li>
+            <li><span class="typebadge page">page</span>3.5 Booking confirmation</li>
+            <li><span class="typebadge modal">modal</span>3.6 Reschedule / cancel</li>
+            <li><span class="typebadge page">page</span>3.7 Upcoming appointments</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">4</div>
+        <div class="l1-content">
+          <div class="l1-title">Family</div>
+          <div class="l1-desc">Linked profiles — common in Nepal where one mobile is shared.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>4.1 Linked family members list</li>
+            <li><span class="typebadge modal">modal</span>4.2 Switch active profile</li>
+            <li><span class="typebadge flow">flow</span>4.3 Add family member</li>
+            <li><span class="typebadge page">page</span>4.4 Per-member consent settings</li>
+            <li><span class="typebadge role">role</span>4.5 Minor-turning-18 consent re-collection</li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="l1">
+        <div class="num-tag">5</div>
+        <div class="l1-content">
+          <div class="l1-title">Profile</div>
+          <div class="l1-desc">Personal info, medical info, privacy, language, support.</div>
+          <ul class="l2">
+            <li><span class="typebadge page">page</span>5.1 Personal info · contact</li>
+            <li><span class="typebadge page">page</span>5.2 Medical info · allergies · chronic</li>
+            <li><span class="typebadge page">page</span>5.3 Privacy preferences · consent ledger</li>
+            <li><span class="typebadge page">page</span>5.4 Notification settings · channel · DND</li>
+            <li><span class="typebadge page">page</span>5.5 Language · Nepali · English</li>
+            <li><span class="typebadge page">page</span>5.6 Help &amp; support</li>
+            <li><span class="typebadge flow">flow</span>5.7 Data export request (Privacy Act)</li>
+            <li><span class="typebadge flow">flow</span>5.8 Account deletion request</li>
+          </ul>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+
+  <h3 class="pat">D.2 · Primary navigation flows</h3>
+  <div class="flow-diagram">
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>Sign in</b> (OTP) <span class="arrow">→</span> if shared mobile · profile switcher <span class="arrow">→</span> Home</span></div>
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>Home</b> <span class="arrow">→</span> "Book" quick action <span class="arrow">→</span> Doctor search <span class="arrow">→</span> Slot pick <span class="arrow">→</span> Pre-consult symptom intake <span class="arrow">→</span> Confirmation + SMS</span></div>
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>Day of visit · arrives at clinic</b> <span class="arrow">→</span> live token banner appears on Home <span class="arrow">→</span> tap to expand to full-screen token display <span class="trigger">cross-app: position broadcast from FD scheduling service</span></span></div>
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>Result-ready notification</b> (push / WhatsApp / SMS) <span class="arrow">→</span> Records <span class="arrow">→</span> Single lab report <span class="arrow">→</span> Doctor's plain-language note appears alongside formal values</span></div>
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>Records · Single prescription</b> <span class="arrow">→</span> "Set reminders" <span class="arrow">→</span> Time picker per drug <span class="arrow">→</span> push notifications scheduled</span></div>
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>External clinic visit</b> <span class="arrow">→</span> Records · Upload external report <span class="arrow">→</span> appears in Diagnostic App review queue <span class="arrow">→</span> tagged and merged into trends</span></div>
+    <div class="flow-row"><span class="flow-from pat">Pat</span><span class="flow-to"><b>Recall reminder</b> (timed by clinical condition, not calendar) <span class="arrow">→</span> Home banner <span class="arrow">→</span> tap "Book" <span class="arrow">→</span> slot pre-filled with original doctor</span></div>
+  </div>
+
+  <!-- FOOTER -->
+  <p style="font-size:13.5px; color:var(--muted); margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule); font-style: italic;">
+    Companion documents: <em>Features &amp; user flows</em> (what each app does), <em>Comprehensive design document</em> (gaps, corner cases, journeys, blueprints, principles), <em>Nepal Clinic SaaS thesis</em> (the market analysis). Mockups will be a separate visual document — this one is the map. Read this before any design review or engineering scoping conversation.
+  </p>
+
+</div>
+</body>
+</html>
